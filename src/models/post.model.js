@@ -127,27 +127,58 @@ const postSchema = new mongoose.Schema(
       trim: true,
       required: true,
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
+
     // seo
-    seo: {
-      metaTitle: {
-        type: String,
-        trim: true,
-        maxlength: [60, "SEO titles should be under 60 chars"],
-        default: function () {
-          return this.title;
-        },
+    metaTitle: {
+      type: String,
+      trim: true,
+      maxlength: [60, "SEO titles should be under 60 chars"],
+      default: function () {
+        return this.title;
       },
-      metaDescription: {
-        type: String,
-        trim: true,
-        maxlength: [160, "SEO descriptions should be under 160 chars"],
-      },
-      keywords: [{ type: String }], // Array of strings for tags
-      canonicalUrl: String,
-      isNoIndex: {
-        type: Boolean,
-        default: false, // Set to true if you want to hide a page from Google
-      },
+    },
+    metaDescription: {
+      type: String,
+      trim: true,
+      maxlength: [160, "SEO descriptions should be under 160 chars"],
+    },
+    keywords: [{ type: String }], // Array of strings for tags
+    canonicalUrl: String,
+    isNoIndex: {
+      type: Boolean,
+      default: false, // Set to true if you want to hide a page from Google
+    },
+    isNoFollow: {
+      type: Boolean,
+      default: true,
+    },
+    ogImage: {
+      type: String,
+      trim: true,
+    },
+    ogTitle: {
+      type: String,
+      trim: true,
+    },
+    ogDescription: {
+      type: String,
+      trim: true,
+    },
+    twitterTitle: {
+      type: String,
+      trim: true,
+    },
+    twitterDescription: {
+      type: String,
+      trim: true,
+    },
+    twitterImage: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true },

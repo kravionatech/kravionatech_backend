@@ -70,7 +70,7 @@ export const createNewPost = async (req, res) => {
 
     // check category are
     const isCategory = await CategoryModel.findOne({ name: category }).select(
-      "name slug",
+      "name slug postCount",
     );
     if (!isCategory) {
       return res.status(404).json({
@@ -99,13 +99,19 @@ export const createNewPost = async (req, res) => {
       status: status || "published",
       description,
       expert: description,
-      seo: {
-        metaTitle,
-        metaDescription,
-        keywords,
-        slug: slugify(title, { lower: true }),
-      },
+      metaTitle,
+      metaDescription,
+      keywords,
+      ogImage: thumbnail,
+      ogTitle: title,
+      ogDescription: description,
+      twitterTitle: title,
+      twitterDescription: description,
+      twitterImage: thumbnail,
     }).save();
+    isCategory.postCount += 1;
+
+    await isCategory.save();
 
     return res.status(201).json({
       message: "Post created successfully",
@@ -174,11 +180,84 @@ export const publishedDetailsPost = async (req, res) => {
         },
       });
     }
-
+    post.views++;
+    await post.save();
     return res.status(200).json({
       message: "Post fetched successfully",
       data: post,
       success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+      success: false,
+    });
+  }
+};
+
+export const PostReaction = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { like, dislike, share } = req.body;
+    const post = await PostModel.findOne({ slug });
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+        success: false,
+      });
+    }
+
+    post.reactions.like += like || 0;
+    post.reactions.dislike += dislike || 0;
+    post.reactions.share += share || 0;
+
+    await post.save();
+
+    return res.status(200).json({
+      message: "Reaction updated successfully",
+      success: true,
+      data: post,
+    });
+  } catch (error) {}
+};
+
+export const categoryByPost = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    if (!slug) {
+      return res.status(400).json({
+        message: "Slug is required",
+        success: false,
+      });
+    }
+    // pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const post = await PostModel.find({ "category.slug": slug })
+      .select("title description category slug author thumbnail")
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit);
+
+    if (post.length === 0) {
+      return res.status(404).json({
+        message: "No posts found for this category",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Post fetched successfully",
+      success: true,
+      pagination: {
+        total: await PostModel.countDocuments(),
+        page,
+        limit,
+      },
+      data: post,
     });
   } catch (error) {
     return res.status(500).json({

@@ -93,58 +93,56 @@ const categorySchema = new mongoose.Schema(
     },
 
     // Add any additional fields as needed, such as SEO metadata, parent category reference, etc.
-    seo: {
-      metaTitle: {
-        type: String,
-        trim: true,
-        maxlength: [60, "Meta title must be less than 60 characters"],
-      },
+    metaTitle: {
+      type: String,
+      trim: true,
+      maxlength: [60, "Meta title must be less than 60 characters"],
+    },
 
-      metaDescription: {
-        type: String,
-        trim: true,
-        maxlength: [160, "Meta description must be less than 160 characters"],
-      },
+    metaDescription: {
+      type: String,
+      trim: true,
+      maxlength: [160, "Meta description must be less than 160 characters"],
+    },
 
-      metaKeywords: {
-        type: [String],
-        default: [],
-      },
+    metaKeywords: {
+      type: [String],
+      default: [],
+    },
 
-      canonicalUrl: {
-        type: String,
-        trim: true,
-      },
+    canonicalUrl: {
+      type: String,
+      trim: true,
+    },
 
-      ogTitle: {
-        type: String,
-        trim: true,
-      },
+    ogTitle: {
+      type: String,
+      trim: true,
+    },
 
-      ogDescription: {
-        type: String,
-        trim: true,
-      },
+    ogDescription: {
+      type: String,
+      trim: true,
+    },
 
-      ogImage: {
-        type: String,
-        trim: true,
-      },
+    ogImage: {
+      type: String,
+      trim: true,
+    },
 
-      twitterTitle: {
-        type: String,
-        trim: true,
-      },
+    twitterTitle: {
+      type: String,
+      trim: true,
+    },
 
-      twitterDescription: {
-        type: String,
-        trim: true,
-      },
+    twitterDescription: {
+      type: String,
+      trim: true,
+    },
 
-      twitterImage: {
-        type: String,
-        trim: true,
-      },
+    twitterImage: {
+      type: String,
+      trim: true,
     },
   },
   {

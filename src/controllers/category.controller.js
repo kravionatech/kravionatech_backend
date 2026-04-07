@@ -55,6 +55,17 @@ export const createCategory = async (req, res) => {
         username: user.username,
       },
       status: status || "published",
+      postCount: 0,
+      metaTitle: name,
+      metaDescription: description,
+      metaKeywords: [],
+      canonicalUrl: "",
+      ogTitle: name,
+      ogDescription: description,
+      ogImage: image,
+      twitterTitle: name,
+      twitterDescription: description,
+      twitterImage: image,
     });
 
     await newCategory.save();
