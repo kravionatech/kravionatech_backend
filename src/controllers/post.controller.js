@@ -171,26 +171,35 @@ export const publishedDetailsPost = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const post = await PostModel.findOne({ slug: slug });
+    // Atomically find the post and increment views by 1 in a single DB call
+    const post = await PostModel.findOneAndUpdate(
+      { slug },
+      { $inc: { views: 1 } },
+      { new: true }, // Return the updated document after incrementing
+    );
+    // .populate("author", "name email avatar") // Agar aapko author details bhi chahiye
+    // .populate("category", "name slug");
+
     if (!post) {
       return res.status(404).json({
+        success: false,
         message: "Post Not Found",
         data: {
-          title: `${slug} this url post not available`,
+          title: `Post with slug '${slug}' is not available`,
         },
       });
     }
-    post.views++;
-    await post.save();
+
     return res.status(200).json({
+      success: true,
       message: "Post fetched successfully",
       data: post,
-      success: true,
     });
   } catch (error) {
+    console.error("Error in publishedDetailsPost:", error);
     return res.status(500).json({
-      message: error.message,
       success: false,
+      message: error.message || "Internal Server Error",
     });
   }
 };
