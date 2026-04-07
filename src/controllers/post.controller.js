@@ -135,7 +135,7 @@ export const publishedPost = async (req, res) => {
     const skip = (page - 1) * limit;
     const posts = await PostModel.find({ status: "published" })
 
-      .select("title description category slug author thumbnail")
+      .select("title description category slug author thumbnail views")
       .sort({
         createdAt: -1,
       })
@@ -171,15 +171,11 @@ export const publishedDetailsPost = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    // Atomically find the post and increment views by 1 in a single DB call
     const post = await PostModel.findOneAndUpdate(
       { slug },
       { $inc: { views: 1 } },
-      { new: true }, // Return the updated document after incrementing
+      { new: true },
     );
-    // .populate("author", "name email avatar") // Agar aapko author details bhi chahiye
-    // .populate("category", "name slug");
-
     if (!post) {
       return res.status(404).json({
         success: false,
@@ -268,6 +264,70 @@ export const categoryByPost = async (req, res) => {
       },
       data: post,
     });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+      success: false,
+    });
+  }
+};
+
+// delete post
+export const deletePost = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+
+    const user = await UserModel.findById(req.user.id);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({
+        message: "Access denied. Admins only.",
+        success: false,
+      });
+    }
+    const { slug } = req.params;
+
+    const post = await PostModel.findOne({ slug });
+
+    const category = await CategoryModel.findOne({ _id: post.categoryID });
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+        success: false,
+      });
+    }
+    await PostModel.findByIdAndDelete(post._id);
+    if (category.postCount > 0) {
+      category.postCount -= 1;
+      await category.save();
+    }
+
+    return res.status(200).json({
+      message: "Post deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+      success: false,
+    });
+  }
+};
+
+// edit post
+export const editPost = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+    }
+    const user = await UserModel.findById(req.user.id);
   } catch (error) {
     return res.status(500).json({
       message: error.message,

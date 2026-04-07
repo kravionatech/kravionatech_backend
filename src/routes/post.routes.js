@@ -3,6 +3,7 @@ import { authMiddleWare } from "../middleware/authMiddleWare.js";
 import {
   categoryByPost,
   createNewPost,
+  deletePost,
   publishedDetailsPost,
   publishedPost,
 } from "../controllers/post.controller.js";
@@ -13,3 +14,4 @@ postRouter.get("/posts", publishedPost);
 postRouter.get("/post/:slug", publishedDetailsPost);
 
 postRouter.get("/posts/category/:slug", categoryByPost);
+postRouter.delete("/post/:slug", authMiddleWare, deletePost);
