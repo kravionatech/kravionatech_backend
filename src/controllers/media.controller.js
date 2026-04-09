@@ -133,7 +133,7 @@ export const getAllFiles = async (req, res) => {
 
     // pagination
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 25;
     const skip = (page - 1) * limit;
     const files = await MediaModel.find({
       userID: user._id,

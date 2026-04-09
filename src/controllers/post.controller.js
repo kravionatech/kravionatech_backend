@@ -108,6 +108,7 @@ export const createNewPost = async (req, res) => {
       twitterTitle: title,
       twitterDescription: description,
       twitterImage: thumbnail,
+      canonicalUrl: `${process.env.FRONTEND_CORS}/blog/${slugify(title, { lower: true })}`,
     }).save();
     isCategory.postCount += 1;
 

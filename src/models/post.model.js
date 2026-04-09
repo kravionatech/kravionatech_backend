@@ -150,11 +150,11 @@ const postSchema = new mongoose.Schema(
     canonicalUrl: String,
     isNoIndex: {
       type: Boolean,
-      default: false, // Set to true if you want to hide a page from Google
+      default: true, 
     },
     isNoFollow: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     ogImage: {
       type: String,
