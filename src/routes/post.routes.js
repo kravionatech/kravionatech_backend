@@ -15,3 +15,4 @@ postRouter.get("/post/:slug", publishedDetailsPost);
 
 postRouter.get("/posts/category/:slug", categoryByPost);
 postRouter.delete("/post/:slug", authMiddleWare, deletePost);
+postRouter.put("/keywords/:slug",  updateKeyword);

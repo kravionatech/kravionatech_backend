@@ -336,3 +336,24 @@ export const editPost = async (req, res) => {
     });
   }
 };
+
+export const updateKeyword = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const { keywords } = req.body;
+    const post = await PostModel.findOne({ slug }).select("keywords");
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+        success: false,
+      });
+    }
+    post.keywords = keywords;
+    await post.save();
+    return res.status(200).json({
+      message: "Keywords updated successfully",
+      success: true,
+      data: post,
+    });
+  } catch (error) {}
+};
