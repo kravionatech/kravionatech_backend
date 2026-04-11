@@ -6,6 +6,7 @@ import {
   deletePost,
   publishedDetailsPost,
   publishedPost,
+  updateKeyword,
 } from "../controllers/post.controller.js";
 export const postRouter = express.Router();
 
@@ -15,4 +16,4 @@ postRouter.get("/post/:slug", publishedDetailsPost);
 
 postRouter.get("/posts/category/:slug", categoryByPost);
 postRouter.delete("/post/:slug", authMiddleWare, deletePost);
-postRouter.put("/keywords/:slug",  updateKeyword);
+postRouter.put("/keywords/:slug", updateKeyword);
