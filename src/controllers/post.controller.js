@@ -2,6 +2,8 @@ import slugify from "slugify";
 import { CategoryModel } from "../models/category.model.js";
 import { PostModel } from "../models/post.model.js";
 import { UserModel } from "../models/user.model.js";
+import { SubscriberModel } from "../models/subscriber.model.js";
+import { NewPostAddEmailNotification, sendEmail } from "../utils/email.js";
 
 export const createNewPost = async (req, res) => {
   try {
@@ -94,7 +96,7 @@ export const createNewPost = async (req, res) => {
         email: user.email,
         username: user.username,
       },
-      slug: slugify(title, { lower: true }),
+      slug: slugify(metaTitle, { lower: true }),
       thumbnail,
       status: status || "published",
       description,
@@ -103,17 +105,29 @@ export const createNewPost = async (req, res) => {
       metaDescription: metaDescription || description.slice(0, 160),
       keywords,
       ogImage: thumbnail,
-      ogTitle: title,
+      ogTitle: metaTitle || title.slice(0, 60),
       ogDescription: description,
-      twitterTitle: title,
+      twitterTitle: metaTitle || title.slice(0, 60),
       twitterDescription: description,
       twitterImage: thumbnail,
-      canonicalUrl: `${process.env.FRONTEND_CORS}/blog/${slugify(title, { lower: true })}`,
+      canonicalUrl: `${process.env.FRONTEND_CORS}/blog/${slugify(metaTitle, { lower: true })}`,
     }).save();
     isCategory.postCount += 1;
 
     await isCategory.save();
 
+    // send subscriber message
+    const subscribers = await SubscriberModel.find().select("email");
+    await sendEmail({
+      to: subscribers.map((subscriber) => subscriber.email),
+      subject: "New Post Alert!",
+      html: NewPostAddEmailNotification({
+        postTitle: newPost.title,
+        postDescription: newPost.description,
+        postUrl: `${process.env.FRONTEND_CORS}/blog/${newPost.slug}`,
+        postThumbnail: newPost.thumbnail,
+      }),
+    });
     return res.status(201).json({
       message: "Post created successfully",
       success: true,

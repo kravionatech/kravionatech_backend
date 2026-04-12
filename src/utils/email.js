@@ -269,3 +269,89 @@ export const SubscriberWelcomeEmail = ({
   </html>
   `;
 };
+
+// new post add mail
+export const NewPostAddEmailNotification = ({
+  subscriberName = "Hello Subscriber",
+  postTitle,
+  postDescription,
+  postUrl,
+  postThumbnail,
+}) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Article Alert!</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333333;">
+      
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f7f6; padding: 20px 0;">
+        <tr>
+          <td align="center">
+            
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 600px; width: 100%;">
+              
+              <tr>
+                <td style="background-color: #064e3b; padding: 30px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">
+                    New Article Published! 🚀
+                  </h1>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.5;">
+                    Hi <strong>${subscriberName}</strong>,
+                  </p>
+                  <p style="font-size: 16px; margin-bottom: 30px; line-height: 1.5;">
+                    We just published a brand new article that we think you'll love. Check out the details below:
+                  </p>
+
+                  ${
+                    postThumbnail
+                      ? `
+                  <div style="text-align: center; margin-bottom: 25px;">
+                    <img src="${postThumbnail}" alt="Post Cover" style="max-width: 100%; border-radius: 8px; height: auto;">
+                  </div>
+                  `
+                      : ""
+                  }
+
+                  <h2 style="font-size: 22px; color: #064e3b; margin-top: 0; margin-bottom: 10px;">
+                    ${postTitle}
+                  </h2>
+                  <p style="font-size: 15px; color: #555555; line-height: 1.6; margin-bottom: 30px;">
+                    ${postDescription.substring(0, 150)}...
+                  </p>
+
+                  <div style="text-align: center; margin-bottom: 20px;">
+                    <a href="${postUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                      Read Full Article
+                    </a>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #eeeeee;">
+                  <p style="font-size: 12px; color: #888888; margin: 0; line-height: 1.5;">
+                    You received this email because you are subscribed to our blog updates.<br>
+                    If you no longer wish to receive these emails, you can <a href="#" style="color: #10b981; text-decoration: underline;">unsubscribe here</a>.
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+            
+          </td>
+        </tr>
+      </table>
+
+    </body>
+    </html>
+  `;
+};
