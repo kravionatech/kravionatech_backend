@@ -48,10 +48,6 @@ const postSchema = new mongoose.Schema(
       },
       slug: {
         type: String,
-        required: true,
-        lowercase: true,
-        trim: true,
-        unique: true,
       },
     },
     // author
@@ -150,7 +146,7 @@ const postSchema = new mongoose.Schema(
     canonicalUrl: String,
     isNoIndex: {
       type: Boolean,
-      default: true, 
+      default: true,
     },
     isNoFollow: {
       type: Boolean,
