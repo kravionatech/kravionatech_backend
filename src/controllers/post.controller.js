@@ -124,7 +124,7 @@ export const createNewPost = async (req, res) => {
       html: NewPostAddEmailNotification({
         postTitle: newPost.title,
         postDescription: newPost.description,
-        postUrl: `${process.env.FRONTEND_CORS}/blog/${newPost.slug}`,
+        postUrl: `${newPost.canonicalUrl}`,
         postThumbnail: newPost.thumbnail,
       }),
     });
