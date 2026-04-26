@@ -1,3 +1,4 @@
+import { token } from "morgan";
 import { SubscriberModel } from "../models/subscriber.model.js";
 import { UserModel } from "../models/user.model.js";
 import { authTokenGenerate } from "../utils/authTokenGenerate.js";
@@ -11,6 +12,8 @@ import {
 } from "../utils/email.js";
 import { generateOTP } from "../utils/optGenerator.js";
 import bcrypt from "bcryptjs";
+import { SessionModel } from "../models/session.model.js";
+import { UAParser } from "ua-parser-js";
 
 // ===============================
 // Create New User Account
@@ -65,8 +68,7 @@ export const createAccount = async (req, res) => {
 
         // Store OTP for account verification
         verification: {
-          otp: generateOTP(),
-          isVerified: false,
+          emailOtp: generateOTP(),
         },
 
         // Default user role
@@ -91,7 +93,7 @@ export const createAccount = async (req, res) => {
       await sendEmail({
         to: newUser.email,
         subject: "Account Verification code",
-        html: OTPSENDUI(newUser.verification.otp, newUser.email),
+        html: OTPSENDUI(newUser.verification.emailOtp, newUser.email),
       });
 
       // ---------------------------------------
@@ -136,7 +138,7 @@ export const accountCodeVerification = async (req, res) => {
         { phone: identifier },
         { username: identifier },
       ],
-    }).select("email username phone verification");
+    }).select("email username phone verification role");
 
     // If user does not exist
     if (!user)
@@ -151,15 +153,18 @@ export const accountCodeVerification = async (req, res) => {
     if (user.isVerified || user.verification.isVerified === true)
       return res.status(400).json({
         success: false,
-        message: "User Already Verified",
+        message: "User Already Verified ",
       });
 
     // ---------------------------------------
     // Compare entered OTP with stored OTP
     // ---------------------------------------
-    const matchOTP = parseInt(otp) === parseInt(user.verification.otp);
+    const matchOTP =
+      parseInt(otp) ===
+      parseInt(user.verification.emailOtp || user.verification.phoneOtp);
 
     if (matchOTP) {
+      // welcome message sent
       await sendEmail({
         to: user.email,
         subject: "Welcome to KRAVIONA",
@@ -167,6 +172,38 @@ export const accountCodeVerification = async (req, res) => {
           userName: user.username,
         }),
       });
+
+      // generate token access and refresh
+
+      const token = await authTokenGenerate({
+        _id: user._id,
+        role: user.role,
+        email: user.email,
+        username: user.username,
+        phone: user.phone,
+      });
+
+      const parser = new UAParser(req.headers["user-agent"]);
+      const ua = parser.getResult();
+      // session id generate
+      await new SessionModel({
+        userID: user._id,
+        refreshToken: token.refreshToken,
+        deviceInfo: {
+          browser: `${ua.browser.name || "Unknown"} ${ua.browser.version || ""}`,
+          os: `${ua.os.name || "Unknown"} ${ua.os.version || ""}`,
+          deviceType: ua.device.type || "desktop",
+          deviceModel: ua.device.model || "Unknown",
+          deviceVendor: ua.device.vendor || "Unknown",
+        },
+
+        ipAddress: req.ip,
+        loginAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+
+        lastActiveAt: new Date(),
+      }).save();
+
       // Clear OTP after successful verification
       user.verification.otp = null;
 
@@ -180,6 +217,7 @@ export const accountCodeVerification = async (req, res) => {
       return res.status(201).json({
         message: "Account Created Successfully",
         success: true,
+        token,
       });
     } else {
       // If OTP does not match
@@ -239,8 +277,8 @@ export const resendOTP = async (req, res) => {
         If OTP is null → generate new OTP
         ---------------------------------
     */
-    if (user.verification.otp === null) {
-      user.verification.otp = generateOTP();
+    if (user.verification.emailOtp === null) {
+      user.verification.emailOtp = generateOTP();
 
       // Save updated OTP in database
       user.save();
@@ -249,7 +287,7 @@ export const resendOTP = async (req, res) => {
       sendEmail({
         to: user.email,
         subject: "Account Authentication code",
-        html: OTPSENDUI(user.verification.otp, user.email),
+        html: OTPSENDUI(user.verification.emailOtp, user.email),
       });
 
       return res.status(200).json({
@@ -265,7 +303,7 @@ export const resendOTP = async (req, res) => {
       sendEmail({
         to: user.email,
         subject: "Account Authentication code",
-        html: OTPSENDUI(user.verification.otp, user.email),
+        html: OTPSENDUI(user.verification.emailOtp, user.email),
       });
 
       return res.status(200).json({
@@ -318,10 +356,9 @@ export const logInWithOTP = async (req, res) => {
       });
 
     // check OTP match or not
-    const matchOTP = parseInt(otp) === parseInt(user.verification.otp);
+    const matchOTP = parseInt(otp) === parseInt(user.verification.emailOtp);
+
     if (matchOTP) {
-      // token generate and send response here
-      console.log("Login Successfully");
       const token = await authTokenGenerate({
         id: user._id,
         email: user.email,
@@ -329,16 +366,34 @@ export const logInWithOTP = async (req, res) => {
         phone: user.phone,
         role: user.role,
       });
+      
+      await new SessionModel({
+        userID: user._id,
+        refreshToken: token.refreshToken,
+        deviceInfo: {
+          browser: `${ua.browser.name || "Unknown"} ${ua.browser.version || ""}`,
+          os: `${ua.os.name || "Unknown"} ${ua.os.version || ""}`,
+          deviceType: ua.device.type || "desktop",
+          deviceModel: ua.device.model || "Unknown",
+          deviceVendor: ua.device.vendor || "Unknown",
+        },
+
+        ipAddress: req.ip,
+        loginAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+
+        lastActiveAt: new Date(),
+      }).save();
 
       // Send login notification email
 
       // Clear OTP after successful login
-      user.verification.otp = null;
+      user.verification.emailOtp = null;
       await user.save();
       return res.status(200).json({
         success: true,
         message: "Login Successfully",
-        token: token,
+        token,
       });
     } else {
       return res.status(400).json({
@@ -367,8 +422,6 @@ export const logInWithPassword = async (req, res) => {
     }
   }
 
-  console.log({ requiredField });
-
   try {
     // check user exist or not
     const user = await UserModel.findOne({
@@ -378,7 +431,6 @@ export const logInWithPassword = async (req, res) => {
         { phone: identifier },
       ],
     }).select("email username phone password role");
-    console.log(user);
 
     // if user not exist
     if (!user)
@@ -391,7 +443,7 @@ export const logInWithPassword = async (req, res) => {
     const matchPassword = bcrypt.compareSync(password, user.password);
     if (matchPassword) {
       // token generate and send response here
-      console.log("Login Successfully");
+
       const token = await authTokenGenerate({
         id: user._id,
         email: user.email,
@@ -399,8 +451,23 @@ export const logInWithPassword = async (req, res) => {
         phone: user.phone,
         role: user.role,
       });
+      await new SessionModel({
+        userID: user._id,
+        refreshToken: token.refreshToken,
+        deviceInfo: {
+          browser: `${ua.browser.name || "Unknown"} ${ua.browser.version || ""}`,
+          os: `${ua.os.name || "Unknown"} ${ua.os.version || ""}`,
+          deviceType: ua.device.type || "desktop",
+          deviceModel: ua.device.model || "Unknown",
+          deviceVendor: ua.device.vendor || "Unknown",
+        },
 
-      console.log("User", user);
+        ipAddress: req.ip,
+        loginAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+
+        lastActiveAt: new Date(),
+      }).save();
 
       // Send login notification email
 
@@ -421,4 +488,48 @@ export const logInWithPassword = async (req, res) => {
   }
 };
 
-//
+// edit account details
+export const editAccount = async (req, res) => {
+  try {
+    const {
+      username,
+      phone,
+      avatar,
+      bio,
+      jobTitle,
+      socialMediaName,
+      socialMediaUrl,
+      emailNotification,
+    } = req.body;
+
+    if (!req.user || !req.user._id)
+      return res.status(401).json({
+        message: "Unauthorized",
+        success: false,
+      });
+
+    const user = await UserModel.findById(req.user._id).select(
+      "email name phone username role avatar profile preferences",
+    );
+
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+
+    await user.updateOne({
+      username: username || user.username,
+      phone: phone || user.phone,
+      avatar: avatar || user.avatar,
+      "profile.bio": bio || user.profile.bio,
+      "profile.jobTitle": jobTitle || user.profile.jobTitle,
+      "profile.socialLinks": [
+        {
+          name: socialMediaName,
+          url: socialMediaUrl,
+        },
+      ],
+      "preferences.emailNotifications": emailNotification,
+    });
+  } catch (error) {}
+};

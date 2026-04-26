@@ -24,7 +24,8 @@
     "multer": "^2.1.1",
     "nodemailer": "^8.0.1",
     "resend": "^6.9.3",
-    "slugify": "^1.6.8"
+    "slugify": "^1.6.8",
+    "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {
     "jest": "^30.2.0",

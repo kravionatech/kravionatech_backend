@@ -355,3 +355,16 @@ export const NewPostAddEmailNotification = ({
     </html>
   `;
 };
+
+export const accountUpdateMail = ({
+  email,
+  logoUrl = `https://kraviona.com/logo.png`,
+  date,
+  deviceInfo,
+  IPAddress,
+  loginTime,
+}) => {
+  // Brand Colors
+  const brandTeal = "#1e4d50";
+  const brandCoral = "#e9845e";
+};
