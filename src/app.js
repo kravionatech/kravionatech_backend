@@ -8,6 +8,7 @@ import cors from "cors";
 import { postRouter } from "./routes/post.routes.js";
 
 export const app = express();
+app.set("trust proxy", true);
 app.use(
   cors({
     origin: "*", // You can lock this down to "http://localhost:3000" later

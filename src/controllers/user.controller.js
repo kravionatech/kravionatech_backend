@@ -185,6 +185,10 @@ export const accountCodeVerification = async (req, res) => {
 
       const parser = new UAParser(req.headers["user-agent"]);
       const ua = parser.getResult();
+      const ipAddress =
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket?.remoteAddress ||
+        req.ip;
       // session id generate
       await new SessionModel({
         userID: user._id,
@@ -197,7 +201,7 @@ export const accountCodeVerification = async (req, res) => {
           deviceVendor: ua.device.vendor || "Unknown",
         },
 
-        ipAddress: req.ip,
+        ipAddress: ipAddress,
         loginAt: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 
@@ -368,6 +372,10 @@ export const logInWithOTP = async (req, res) => {
       });
       const parser = new UAParser(req.headers["user-agent"]);
       const ua = parser.getResult();
+      const ipAddress =
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket?.remoteAddress ||
+        req.ip;
       await new SessionModel({
         userID: user._id,
         refreshToken: token.refreshToken,
@@ -379,7 +387,7 @@ export const logInWithOTP = async (req, res) => {
           deviceVendor: ua.device.vendor || "Unknown",
         },
 
-        ipAddress: req.ip,
+        ipAddress: ipAddress,
         loginAt: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 
@@ -455,7 +463,10 @@ export const logInWithPassword = async (req, res) => {
 
       const parser = new UAParser(req.headers["user-agent"]);
       const ua = parser.getResult();
-
+      const ipAddress =
+        req.headers["x-forwarded-for"]?.split(",")[0] ||
+        req.socket?.remoteAddress ||
+        req.ip;
       await new SessionModel({
         userID: user._id,
         refreshToken: token.refreshToken,
@@ -467,7 +478,7 @@ export const logInWithPassword = async (req, res) => {
           deviceVendor: ua.device.vendor || "Unknown",
         },
 
-        ipAddress: req.ip,
+        ipAddress: ipAddress,
         loginAt: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 
