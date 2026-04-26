@@ -366,7 +366,8 @@ export const logInWithOTP = async (req, res) => {
         phone: user.phone,
         role: user.role,
       });
-      
+      const parser = new UAParser(req.headers["user-agent"]);
+      const ua = parser.getResult();
       await new SessionModel({
         userID: user._id,
         refreshToken: token.refreshToken,
@@ -451,6 +452,10 @@ export const logInWithPassword = async (req, res) => {
         phone: user.phone,
         role: user.role,
       });
+
+      const parser = new UAParser(req.headers["user-agent"]);
+      const ua = parser.getResult();
+
       await new SessionModel({
         userID: user._id,
         refreshToken: token.refreshToken,
