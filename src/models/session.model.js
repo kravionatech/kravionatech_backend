@@ -33,6 +33,8 @@ const sessionSchema = new Schema(
       trim: true,
     },
 
+    
+
     // 4. SESSION LIFECYCLE
     loginAt: {
       type: Date,

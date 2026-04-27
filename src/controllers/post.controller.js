@@ -17,7 +17,7 @@ export const createNewPost = async (req, res) => {
     }
 
     // is user required
-    const user = await UserModel.findById(req.user.id);
+    const user = await UserModel.findById(req.user.id).select("email role username name");
     if (!user) {
       return res.status(404).json({
         message: "User not found",
