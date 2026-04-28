@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import config from "../config/config";
 
 const postSchema = new mongoose.Schema(
   {
@@ -31,7 +32,7 @@ const postSchema = new mongoose.Schema(
     // Automate 301 redirects for changed slugs
     previousSlugs: [
       {
-        slug: { type: String, required: true },
+        slug: { type: String },
         addedAt: { type: Date, default: Date.now },
       },
     ],
@@ -153,7 +154,13 @@ const postSchema = new mongoose.Schema(
     keywords: [{ type: String, trim: true }],
     focusKeywords: [{ type: String, trim: true }],
     semanticKeywords: [{ type: String, trim: true }], // LSI Keywords
-    canonicalUrl: { type: String, trim: true },
+    canonicalUrl: {
+      type: String,
+      trim: true,
+      default: function () {
+        return `${config.BACKENDAPI_CORS}/${this.page}/${this.slug}`;
+      },
+    },
     isNoIndex: { type: Boolean, default: false },
     isNoFollow: { type: Boolean, default: false },
 
@@ -215,6 +222,11 @@ const postSchema = new mongoose.Schema(
       enum: ["published", "draft", "archived"],
       default: "published",
     },
+    page: {
+      type: String,
+      default: "home",
+      enum: ["home", "blog", "service", "about"],
+    },
 
     // Track AI vs Human content (Google 2026 guidelines)
     contentSourceType: {
@@ -246,8 +258,6 @@ const postSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-  
-
   },
   { timestamps: true },
 );
