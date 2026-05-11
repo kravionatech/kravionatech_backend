@@ -116,21 +116,22 @@ export const createNewPost = async (req, res) => {
         email: user.email,
         username: user.username,
       },
-      slug: slugify(metaTitle, { lower: true }),
-      thumbnail,
+      slug: slug || slugify(title, { lower: true }),
+      featuredImage: {
+        small: { url: thumbnail, altText: title, width: 300, height: 200 },
+        medium: { url: thumbnail, altText: title, width: 800, height: 600 },
+        large: { url: thumbnail, altText: title, width: 1200, height: 800 },
+      },
       status: status || "published",
-      description,
-      excerpt: excerpt || description.slice(0, 200),
-      metaTitle: metaTitle || title.slice(0, 60),
-      metaDescription: metaDescription || description.slice(0, 160),
+      excerpt: excerpt || (description ? description.slice(0, 200) : title),
+      metaTitle: metaTitle || title.slice(0, 100),
+      metaDescription: metaDescription || (description ? description.slice(0, 160) : title),
       keywords,
-      ogImage: thumbnail,
       ogTitle: metaTitle || title.slice(0, 60),
       ogDescription: description,
       twitterTitle: metaTitle || title.slice(0, 60),
       twitterDescription: description,
-      twitterImage: thumbnail,
-      canonicalUrl: `${process.env.FRONTEND_CORS}/blog/${slugify(metaTitle, { lower: true })}`,
+      canonicalUrl: canonicalUrl || `${process.env.FRONTEND_CORS}/blog/${slug || slugify(title, { lower: true })}`,
     }).save();
     isCategory.postCount += 1;
 
@@ -143,9 +144,9 @@ export const createNewPost = async (req, res) => {
       subject: "New Post Alert!",
       html: NewPostAddEmailNotification({
         postTitle: newPost.title,
-        postDescription: newPost.description,
+        postDescription: newPost.excerpt,
         postUrl: `${newPost.canonicalUrl}`,
-        postThumbnail: newPost.thumbnail,
+        postThumbnail: newPost.featuredImage?.large?.url || newPost.featuredImage?.small?.url || newPost.featuredImage?.medium?.url,
       }),
     });
     return res.status(201).json({
@@ -170,7 +171,7 @@ export const publishedPost = async (req, res) => {
     const skip = (page - 1) * limit;
     const posts = await PostModel.find({ status: "published" })
 
-      .select("title description category slug author thumbnail views")
+      .select("title excerpt category slug author featuredImage views")
       .sort({
         createdAt: -1,
       })
@@ -277,7 +278,7 @@ export const categoryByPost = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const post = await PostModel.find({ "category.slug": slug })
-      .select("title description category slug author thumbnail")
+      .select("title excerpt category slug author featuredImage")
       .sort({
         createdAt: -1,
       })
