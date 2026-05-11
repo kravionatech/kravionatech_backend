@@ -3,9 +3,9 @@ import config from "./config.js";
 
 export const databaseConnection = async () => {
   try {
-    const conn = await mongoose.connect(
-      `${config.MONGODB_URI}/${config.MONGODB_DB_NAME}`,
-    );
+    const conn = await mongoose.connect(config.MONGODB_URI, {
+      dbName: config.MONGODB_DB_NAME,
+    });
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
