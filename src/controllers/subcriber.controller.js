@@ -31,7 +31,7 @@ export const newSubscriber = async (req, res) => {
 
       return res.status(201).json({
         message: "User Subscribed Successfully",
-        success: false,
+        success: true,
         subscriber: newSub,
       });
     }

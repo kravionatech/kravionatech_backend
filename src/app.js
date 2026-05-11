@@ -9,11 +9,17 @@ import { postRouter } from "./routes/post.routes.js";
 
 export const app = express();
 app.set("trust proxy", true);
+
+// CORS Configuration with environment variables for security
+const allowedOrigins = [
+  process.env.FRONTEND_CORS || "http://localhost:3000",
+  process.env.ADMIN_CORS || "http://localhost:3001",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: "*", // You can lock this down to "http://localhost:3000" later
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-
     credentials: true,
   }),
 );

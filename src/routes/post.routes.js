@@ -4,6 +4,8 @@ import {
   categoryByPost,
   createNewPost,
   deletePost,
+  editPost,
+  PostReaction,
   publishedDetailsPost,
   publishedPost,
   updateKeyword,
@@ -16,4 +18,6 @@ postRouter.get("/post/:slug", publishedDetailsPost);
 
 postRouter.get("/posts/category/:slug", categoryByPost);
 postRouter.delete("/post/:slug", authMiddleWare, deletePost);
-postRouter.put("/keywords/:slug", updateKeyword);
+postRouter.put("/post/:slug", authMiddleWare, editPost);
+postRouter.put("/keywords/:slug", authMiddleWare, updateKeyword);
+postRouter.put("/post/reaction/:slug", PostReaction);

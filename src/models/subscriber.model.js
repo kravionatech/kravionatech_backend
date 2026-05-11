@@ -22,4 +22,4 @@ const subscriberSchema = new Schema(
   { timestamps: true },
 );
 
-export const SubscriberModel = model("subscriber", subscriberSchema      );
+export const SubscriberModel = model("subscriber", subscriberSchema);

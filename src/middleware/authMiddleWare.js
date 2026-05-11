@@ -5,7 +5,10 @@ export const authMiddleWare = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized: No token provided" });
+    return res.status(401).json({ 
+      message: "Unauthorized: No token provided",
+      success: false 
+    });
   }
 
   try {
@@ -13,15 +16,22 @@ export const authMiddleWare = (req, res, next) => {
     if (!token) {
       return res
         .status(401)
-        .json({ message: "Unauthorized: No token provided" });
+        .json({ 
+          message: "Unauthorized: No token provided",
+          success: false 
+        });
     }
-    // Optionally, you can verify the token here using a library like jsonwebtoken
+    // Verify the token using jsonwebtoken
     const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
     req.user = decoded; // Attach decoded user info to the request object
     next();
   } catch (error) {
     return res
-      .status(500)
-      .json({ message: "Internal server error", details: error.message });
+      .status(401)
+      .json({ 
+        message: "Unauthorized: Invalid or expired token", 
+        success: false,
+        details: error.message 
+      });
   }
 };

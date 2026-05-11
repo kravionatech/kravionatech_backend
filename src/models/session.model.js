@@ -54,6 +54,11 @@ const sessionSchema = new Schema(
       type: Boolean,
       default: false,
     },
+
+    macAddress: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true },
 );

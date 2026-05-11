@@ -14,6 +14,8 @@ import { generateOTP } from "../utils/optGenerator.js";
 import bcrypt from "bcryptjs";
 import { SessionModel } from "../models/session.model.js";
 import { UAParser } from "ua-parser-js";
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
 
 // ===============================
 // Create New User Account
@@ -28,10 +30,10 @@ export const createAccount = async (req, res) => {
   const requiredField = { email, name, username, phone, password };
 
   for (let [key, value] of Object.entries(requiredField)) {
-    if ((value = "" || null)) {
+    if (!value) {
       return res.status(400).json({
         success: false,
-        message: ` ${key} is required`,
+        message: `${key} is required`,
       });
     }
   }
@@ -57,6 +59,10 @@ export const createAccount = async (req, res) => {
     if (!user) {
       // Hash the password before saving
       const hashPassword = bcrypt.hashSync(password, 10);
+      
+      // Generate OTP
+      const generatedOTP = generateOTP().toString();
+      const hashedOTP = bcrypt.hashSync(generatedOTP, 10);
 
       // Create new user document
       const newUser = await UserModel({
@@ -66,9 +72,9 @@ export const createAccount = async (req, res) => {
         password: hashPassword,
         phone,
 
-        // Store OTP for account verification
+        // Store hashed OTP for account verification
         verification: {
-          emailOtp: generateOTP(),
+          emailOtp: hashedOTP,
         },
 
         // Default user role
@@ -88,19 +94,20 @@ export const createAccount = async (req, res) => {
       });
 
       // ---------------------------------------
-      // Send OTP verification email
+      // Send OTP verification email (send actual OTP, not hash)
       // ---------------------------------------
       await sendEmail({
         to: newUser.email,
         subject: "Account Verification code",
-        html: OTPSENDUI(newUser.verification.emailOtp, newUser.email),
+        html: OTPSENDUI(generatedOTP, newUser.email),
       });
 
       // ---------------------------------------
       // Response after sending OTP
       // ---------------------------------------
       return res.status(201).json({
-        message: `Verification code sent ${newUser.email}`,
+        message: `Verification code sent to ${newUser.email}`,
+        success: true,
       });
     }
   } catch (error) {
@@ -160,8 +167,7 @@ export const accountCodeVerification = async (req, res) => {
     // Compare entered OTP with stored OTP
     // ---------------------------------------
     const matchOTP =
-      parseInt(otp) ===
-      parseInt(user.verification.emailOtp || user.verification.phoneOtp);
+      bcrypt.compareSync(otp, user.verification.emailOtp || user.verification.phoneOtp);
 
     if (matchOTP) {
       // welcome message sent
@@ -176,7 +182,7 @@ export const accountCodeVerification = async (req, res) => {
       // generate token access and refresh
 
       const token = await authTokenGenerate({
-        _id: user._id,
+        id: user._id,
         role: user.role,
         email: user.email,
         username: user.username,
@@ -282,37 +288,45 @@ export const resendOTP = async (req, res) => {
         ---------------------------------
     */
     if (user.verification.emailOtp === null) {
-      user.verification.emailOtp = generateOTP();
+      const generatedOTP = generateOTP().toString();
+      user.verification.emailOtp = bcrypt.hashSync(generatedOTP, 10);
 
       // Save updated OTP in database
-      user.save();
+      await user.save();
 
-      // Send OTP email
-      sendEmail({
+      // Send OTP email (send actual OTP, not the hash)
+      await sendEmail({
         to: user.email,
         subject: "Account Authentication code",
-        html: OTPSENDUI(user.verification.emailOtp, user.email),
+        html: OTPSENDUI(generatedOTP, user.email),
       });
 
       return res.status(200).json({
         success: true,
-        message: "Verification code sent your register email",
+        message: "Verification code sent to your register email",
       });
     } else {
       /*
         ---------------------------------
-        If OTP already exists → resend same OTP
+        If OTP already exists → generate new OTP to resend
         ---------------------------------
       */
-      sendEmail({
+      const generatedOTP = generateOTP().toString();
+      user.verification.emailOtp = bcrypt.hashSync(generatedOTP, 10);
+
+      // Save updated OTP in database
+      await user.save();
+
+      // Send OTP email (send actual OTP, not the hash)
+      await sendEmail({
         to: user.email,
         subject: "Account Authentication code",
-        html: OTPSENDUI(user.verification.emailOtp, user.email),
+        html: OTPSENDUI(generatedOTP, user.email),
       });
 
       return res.status(200).json({
         success: true,
-        message: "Verification code sent your register email",
+        message: "Verification code sent to your register email",
       });
     }
   } catch (error) {
@@ -360,7 +374,7 @@ export const logInWithOTP = async (req, res) => {
       });
 
     // check OTP match or not
-    const matchOTP = parseInt(otp) === parseInt(user.verification.emailOtp);
+    const matchOTP = bcrypt.compareSync(otp, user.verification.emailOtp);
 
     if (matchOTP) {
       const token = await authTokenGenerate({
@@ -547,5 +561,39 @@ export const editAccount = async (req, res) => {
       ],
       "preferences.emailNotifications": emailNotification,
     });
-  } catch (error) {}
+
+    return res.status(200).json({
+      message: "Account details updated successfully",
+      success: true
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
+
+
+
+// refresh token generate and send response here
+export const refreshToken = async (req, res) => {
+
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(401).json({ message: "Refresh Token is required", success: false });
+    }
+    const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
+    const newToken = authTokenGenerate({
+      id: decoded.id,
+      email: decoded.email,
+      username: decoded.username,
+      phone: decoded.phone,
+      role: decoded.role,
+    });
+    return res.status(200).json({ success: true, token: newToken });
+  } catch (error) {
+    return res.status(403).json({ message: "Invalid refresh token", success: false, error: error.message });
+  }
+}; 

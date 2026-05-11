@@ -120,7 +120,7 @@ export const createNewPost = async (req, res) => {
       thumbnail,
       status: status || "published",
       description,
-      expert: description,
+      excerpt: excerpt || description.slice(0, 200),
       metaTitle: metaTitle || title.slice(0, 60),
       metaDescription: metaDescription || description.slice(0, 160),
       keywords,
@@ -258,7 +258,9 @@ export const PostReaction = async (req, res) => {
       success: true,
       data: post,
     });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 export const categoryByPost = async (req, res) => {
@@ -363,6 +365,16 @@ export const editPost = async (req, res) => {
       });
     }
     const user = await UserModel.findById(req.user.id);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only.", success: false });
+    }
+    const { slug } = req.params;
+    const updateData = req.body;
+    const post = await PostModel.findOneAndUpdate({ slug }, updateData, { new: true });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found", success: false });
+    }
+    return res.status(200).json({ message: "Post updated successfully", success: true, data: post });
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -373,6 +385,9 @@ export const editPost = async (req, res) => {
 
 export const updateKeyword = async (req, res) => {
   try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only.", success: false });
+    }
     const { slug } = req.params;
     const { keywords } = req.body;
     const post = await PostModel.findOne({ slug }).select("keywords");

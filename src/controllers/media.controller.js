@@ -43,11 +43,11 @@ export const uploadFile = async (req, res) => {
       let targetFolder = "others";
 
       if (fileType === "image") {
-        targetFolder = "crossover/images";
+        targetFolder = "kraviona/images";
       } else if (fileType === "video") {
-        targetFolder = "crossover/videos";
+        targetFolder = "kraviona/videos";
       } else if (file.mimetype === "application/pdf") {
-        targetFolder = "crossover/docs";
+        targetFolder = "kraviona/docs";
       }
       console.log("Uploading  ...");
       // 2. Cloudinary Upload Function
@@ -140,7 +140,7 @@ export const getAllFiles = async (req, res) => {
     })
       .select("url filename authorDetails format size")
       .sort({
-        createAt: -1,
+        createdAt: -1,
       })
       .skip(skip)
       .limit(limit);
@@ -154,7 +154,7 @@ export const getAllFiles = async (req, res) => {
 
     if (files) {
       return res.status(200).json({
-        message: "Media fetch Success fully",
+        message: "Media fetched successfully",
         success: true,
         pagination: {
           total: await MediaModel.countDocuments(),
@@ -166,7 +166,7 @@ export const getAllFiles = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(500).status({
+    return res.status(500).json({
       message: "Internal server error",
       error: error.message,
       success: false,
