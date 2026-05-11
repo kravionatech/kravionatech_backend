@@ -409,6 +409,18 @@ export const logInWithOTP = async (req, res) => {
       }).save();
 
       // Send login notification email
+      await sendEmail({
+        to: user.email,
+        subject: "New Login Detected",
+        html: LOGIN_NOTIFICATION_EMAIL_UI({
+          userName: user.username,
+          userEmail: user.email,
+          deviceInfo: `${ua.browser.name} on ${ua.os.name}`,
+          location: ipAddress,
+          time: new Date().toLocaleString(),
+          secureAccountLink: `${process.env.FRONTEND_CORS}/account/security`
+        }),
+      });
 
       // Clear OTP after successful login
       user.verification.emailOtp = null;
@@ -500,6 +512,18 @@ export const logInWithPassword = async (req, res) => {
       }).save();
 
       // Send login notification email
+      await sendEmail({
+        to: user.email,
+        subject: "New Login Detected",
+        html: LOGIN_NOTIFICATION_EMAIL_UI({
+          userName: user.username,
+          userEmail: user.email,
+          deviceInfo: `${ua.browser.name} on ${ua.os.name}`,
+          location: ipAddress,
+          time: new Date().toLocaleString(),
+          secureAccountLink: `${process.env.FRONTEND_CORS}/account/security`
+        }),
+      });
 
       return res
         .status(200)
@@ -532,13 +556,13 @@ export const editAccount = async (req, res) => {
       emailNotification,
     } = req.body;
 
-    if (!req.user || !req.user._id)
+    if (!req.user || !req.user.id)
       return res.status(401).json({
         message: "Unauthorized",
         success: false,
       });
 
-    const user = await UserModel.findById(req.user._id).select(
+    const user = await UserModel.findById(req.user.id).select(
       "email name phone username role avatar profile preferences",
     );
 

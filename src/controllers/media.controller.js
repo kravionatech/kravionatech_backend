@@ -66,6 +66,7 @@ export const uploadFile = async (req, res) => {
 
       const newFile = await MediaModel({
         url: result.secure_url,
+        publicId: result.public_id,
         filename: file.filename,
         alt: filename,
         userID: req.user.id,
@@ -212,7 +213,17 @@ export const deleteFile = async (req, res) => {
     }
 
     // delete from cloudinary
-    const publicID = file.url.split("/").slice(-1)[0].split(".")[0];
+    let publicID = file.publicId;
+    if (!publicID) {
+      // Fallback extraction if publicId wasn't saved (old records)
+      const urlParts = file.url.split("/upload/");
+      if (urlParts.length > 1) {
+        publicID = urlParts[1].split(".")[0].split("/").slice(1).join("/");
+      } else {
+        publicID = file.url.split("/").slice(-1)[0].split(".")[0];
+      }
+    }
+    
     await cloudinary.uploader.destroy(publicID, (error, result) => {
       if (error) {
         console.log("Cloudinary Deletion Error:", error);

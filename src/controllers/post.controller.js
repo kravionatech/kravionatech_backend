@@ -330,14 +330,13 @@ export const deletePost = async (req, res) => {
     const { slug } = req.params;
 
     const post = await PostModel.findOne({ slug });
-
-    const category = await CategoryModel.findOne({ _id: post.categoryID });
     if (!post) {
       return res.status(404).json({
         message: "Post not found",
         success: false,
       });
     }
+    const category = await CategoryModel.findOne({ _id: post.categoryID });
     await PostModel.findByIdAndDelete(post._id);
     if (category.postCount > 0) {
       category.postCount -= 1;
@@ -405,5 +404,7 @@ export const updateKeyword = async (req, res) => {
       success: true,
       data: post,
     });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };

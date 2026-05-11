@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const mediaSchema = new mongoose.Schema(
   {
     url: { type: String, required: true },
+    publicId: { type: String, required: false },
 
     filename: { type: String, required: true, default: "Untitled" },
     alt: { type: String, default: "Untitled" },
