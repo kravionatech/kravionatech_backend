@@ -7,7 +7,9 @@ import {
   logInWithPassword,
   refreshToken,
   resendOTP,
+  logout,
 } from "../controllers/user.controller.js";
+
 import { authMiddleWare } from "../middleware/authMiddleWare.js";
 
 export const userRouter = express.Router();
@@ -23,3 +25,5 @@ userRouter.post("/auth/login-password", logInWithPassword);
 
 userRouter.put("/auth/edit-account", authMiddleWare, editAccount);
 userRouter.post("/auth/refresh-token", refreshToken);
+userRouter.post("/auth/logout", authMiddleWare, logout);
+

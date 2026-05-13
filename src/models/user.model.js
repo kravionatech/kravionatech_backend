@@ -78,8 +78,11 @@ const userSchema = new Schema(
     role: {
       type: String,
       default: "user",
-      enum: ["user", "admin", "editor", "author"], // Changed 'creator' to 'author' for standard blog terminology
+      // Guideline roles added: super_admin, viewer
+      // Legacy roles kept: user, author — so existing data isn't broken
+      enum: ["super_admin", "admin", "editor", "author", "user", "viewer"],
     },
+
 
     isActive: { type: Boolean, default: true },
 

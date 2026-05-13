@@ -1,0 +1,23 @@
+import express from "express";
+import { authMiddleWare } from "../middleware/authMiddleWare.js";
+import roleCheck from "../middleware/roleCheck.js";
+import {
+  createProject,
+  getPublicProjects,
+  getProjectBySlug,
+  getAdminProjects,
+  updateProject,
+  deleteProject,
+} from "../controllers/project.controller.js";
+
+export const projectRouter = express.Router();
+
+// Public
+projectRouter.get("/projects", getPublicProjects);                       // ?category=slug&page&limit
+projectRouter.get("/project/:slug", getProjectBySlug);
+
+// Admin
+projectRouter.post("/admin/projects", authMiddleWare, roleCheck("admin", "super_admin"), createProject);
+projectRouter.get("/admin/projects", authMiddleWare, getAdminProjects);
+projectRouter.put("/admin/project/:id", authMiddleWare, roleCheck("admin", "super_admin"), updateProject);
+projectRouter.delete("/admin/project/:id", authMiddleWare, roleCheck("admin", "super_admin"), deleteProject);

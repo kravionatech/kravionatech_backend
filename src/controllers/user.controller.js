@@ -16,6 +16,8 @@ import { SessionModel } from "../models/session.model.js";
 import { UAParser } from "ua-parser-js";
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
+import { TokenBlacklistModel } from "../models/TokenBlacklist.model.js";
+
 
 // ===============================
 // Create New User Account
@@ -600,14 +602,24 @@ export const editAccount = async (req, res) => {
 
 
 
-// refresh token generate and send response here
+// ========================================
+// Refresh Token — check blacklist, issue new accessToken
+// POST /api/auth/refresh-token
+// Body: { token }  (refreshToken)
+// ========================================
 export const refreshToken = async (req, res) => {
-
   try {
     const { token } = req.body;
     if (!token) {
       return res.status(401).json({ message: "Refresh Token is required", success: false });
     }
+
+    // Reject if token has been blacklisted (logged out)
+    const blacklisted = await TokenBlacklistModel.findOne({ token });
+    if (blacklisted) {
+      return res.status(401).json({ success: false, message: "Token has been invalidated — please log in again" });
+    }
+
     const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
     const newToken = authTokenGenerate({
       id: decoded.id,
@@ -620,4 +632,39 @@ export const refreshToken = async (req, res) => {
   } catch (error) {
     return res.status(403).json({ message: "Invalid refresh token", success: false, error: error.message });
   }
-}; 
+};
+
+// ========================================
+// Logout — blacklist the refreshToken
+// POST /api/auth/logout
+// Body: { token }  (refreshToken to invalidate)
+// ========================================
+export const logout = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Refresh token is required" });
+    }
+
+    // Decode without verifying so we can get expiry even for expired tokens
+    let expiresAt;
+    try {
+      const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
+      expiresAt = new Date(decoded.exp * 1000);
+    } catch (_) {
+      // Token expired or invalid — still blacklist for safety, expire in 7 days
+      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Upsert to avoid duplicate-key error on repeated logout
+    await TokenBlacklistModel.updateOne(
+      { token },
+      { $set: { token, expiresAt, userId: req.user?.id || req.user?._id } },
+      { upsert: true },
+    );
+
+    return res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

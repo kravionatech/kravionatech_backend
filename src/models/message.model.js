@@ -61,7 +61,43 @@ const messageSchema = new mongoose.Schema(
       default: false,
     },
 
-    
+    // ──────────────────────────────────────────
+    // Module 6 — CRM Enhancement Fields
+    // ──────────────────────────────────────────
+    service: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service",
+    },
+
+    budget: { type: String, trim: true }, // e.g. "₹50k-1L"
+    timeline: { type: String, trim: true }, // e.g. "1 month"
+
+    status: {
+      type: String,
+      enum: ["new", "contacted", "in-progress", "closed", "spam"],
+      default: "new",
+    },
+
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    source: {
+      type: String,
+      enum: ["contact-form", "service-page", "blog-cta"],
+      default: "contact-form",
+    },
+
+    notes: [
+      {
+        text: { type: String, trim: true },
+        addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
+
+
   },
   {
     timestamps: true,
