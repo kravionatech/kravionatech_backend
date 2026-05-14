@@ -367,13 +367,20 @@ export const logInWithOTP = async (req, res) => {
         { username: identifier },
         { phone: identifier },
       ],
-    }).select("email username phone verification");
+    }).select("email username phone verification isActive role");
 
     if (!user)
       return res.status(404).json({
         success: false,
         message: "User Not Found",
       });
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked by the administrator.",
+      });
+    }
 
     // check OTP match or not
     const matchOTP = bcrypt.compareSync(otp, user.verification.emailOtp);
@@ -467,7 +474,7 @@ export const logInWithPassword = async (req, res) => {
         { username: identifier },
         { phone: identifier },
       ],
-    }).select("email username phone password role");
+    }).select("email username phone password isActive role");
 
     // if user not exist
     if (!user)
@@ -475,6 +482,13 @@ export const logInWithPassword = async (req, res) => {
         success: false,
         message: "User Not Found",
       });
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked by the administrator.",
+      });
+    }
 
     // check password match or not
     const matchPassword = bcrypt.compareSync(password, user.password);
@@ -664,6 +678,115 @@ export const logout = async (req, res) => {
     );
 
     return res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN ONLY: Get all users
+// ─────────────────────────────────────────────────────────────
+export const getAllUsers = async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit) || 20);
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      UserModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      UserModel.countDocuments(),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// SUPER_ADMIN ONLY: Update user role
+// ─────────────────────────────────────────────────────────────
+export const updateUserRole = async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    const validRoles = ["super_admin", "user"];
+
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: "Invalid role" });
+    }
+
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { role },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User role updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// SUPER_ADMIN ONLY: Block/Unblock user
+// ─────────────────────────────────────────────────────────────
+export const toggleUserBlock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({ success: false, message: "isActive status must be a boolean" });
+    }
+
+    const user = await UserModel.findByIdAndUpdate(
+      id,
+      { isActive },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isActive ? "User unblocked successfully" : "User blocked successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// SUPER_ADMIN ONLY: Delete user
+// ─────────────────────────────────────────────────────────────
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await UserModel.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

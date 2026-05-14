@@ -15,7 +15,7 @@ export const teamRouter = express.Router();
 teamRouter.get("/team", getPublicTeam);
 
 // Admin
-teamRouter.post("/admin/team", authMiddleWare, roleCheck("admin", "super_admin"), createTeamMember);
-teamRouter.get("/admin/team", authMiddleWare, getAdminTeam);
-teamRouter.put("/admin/team/:id", authMiddleWare, roleCheck("admin", "super_admin"), updateTeamMember);
-teamRouter.delete("/admin/team/:id", authMiddleWare, roleCheck("admin", "super_admin"), deleteTeamMember);
+teamRouter.post("/admin/team", authMiddleWare, roleCheck("super_admin"), createTeamMember);
+teamRouter.get("/admin/team", authMiddleWare, roleCheck("super_admin"), getAdminTeam);
+teamRouter.put("/admin/team/:id", authMiddleWare, roleCheck("super_admin"), updateTeamMember);
+teamRouter.delete("/admin/team/:id", authMiddleWare, roleCheck("super_admin"), deleteTeamMember);

@@ -1,5 +1,6 @@
 import express from "express";
 import { authMiddleWare } from "../middleware/authMiddleWare.js";
+import roleCheck from "../middleware/roleCheck.js";
 import {
   assignMessage,
   addMessageNote,
@@ -12,6 +13,7 @@ export const messagesCRMRouter = express.Router();
 messagesCRMRouter.patch(
   "/admin/messages/:id/assign",
   authMiddleWare,
+  roleCheck("super_admin"),
   assignMessage,
 );
 
@@ -19,6 +21,7 @@ messagesCRMRouter.patch(
 messagesCRMRouter.post(
   "/admin/messages/:id/note",
   authMiddleWare,
+  roleCheck("super_admin"),
   addMessageNote,
 );
 
@@ -26,5 +29,6 @@ messagesCRMRouter.post(
 messagesCRMRouter.get(
   "/admin/leads/stats",
   authMiddleWare,
+  roleCheck("super_admin"),
   getLeadsStats,
 );

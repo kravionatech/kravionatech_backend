@@ -26,11 +26,11 @@ export const createNewPost = async (req, res) => {
         success: false,
       });
     }
-    // check user admin
+    // check user is super_admin
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
     }
@@ -321,9 +321,9 @@ export const deletePost = async (req, res) => {
     }
 
     const user = await UserModel.findById(req.user.id);
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "super_admin") {
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
     }
@@ -365,8 +365,8 @@ export const editPost = async (req, res) => {
       });
     }
     const user = await UserModel.findById(req.user.id);
-    if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only.", success: false });
+    if (!user || user.role !== "super_admin") {
+      return res.status(403).json({ message: "Access denied. Super Admins only.", success: false });
     }
     const { slug } = req.params;
     const updateData = req.body;
@@ -385,8 +385,8 @@ export const editPost = async (req, res) => {
 
 export const updateKeyword = async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only.", success: false });
+    if (!req.user || req.user.role !== "super_admin") {
+      return res.status(403).json({ message: "Access denied. Super Admins only.", success: false });
     }
     const { slug } = req.params;
     const { keywords } = req.body;

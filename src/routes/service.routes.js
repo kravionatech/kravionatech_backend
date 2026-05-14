@@ -31,7 +31,7 @@ serviceRouter.get("/service/:slug", getServiceBySlug);
 serviceRouter.post(
   "/admin/services",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   createService,
 );
 
@@ -39,6 +39,7 @@ serviceRouter.post(
 serviceRouter.get(
   "/admin/services",
   authMiddleWare,
+  roleCheck("super_admin"),
   getAdminServices,
 );
 
@@ -46,7 +47,7 @@ serviceRouter.get(
 serviceRouter.put(
   "/admin/service/:id",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   updateService,
 );
 
@@ -54,7 +55,7 @@ serviceRouter.put(
 serviceRouter.delete(
   "/admin/service/:id",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   deleteService,
 );
 
@@ -62,6 +63,6 @@ serviceRouter.delete(
 serviceRouter.patch(
   "/admin/service/:id/order",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   updateServiceOrder,
 );

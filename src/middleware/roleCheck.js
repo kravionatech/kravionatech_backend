@@ -1,6 +1,6 @@
 /**
  * roleCheck middleware
- * Usage: roleCheck('admin') or roleCheck('admin', 'super_admin')
+ * Usage: roleCheck('super_admin')
  * Must be used AFTER authMiddleWare so req.user is populated.
  */
 const roleCheck = (...allowedRoles) =>

@@ -22,9 +22,9 @@ export const uploadFile = async (req, res) => {
       });
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
     }
@@ -126,9 +126,9 @@ export const getAllFiles = async (req, res) => {
       });
     }
 
-    if (user.role !== "admin")
+    if (user.role !== "super_admin")
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
 
@@ -195,9 +195,9 @@ export const deleteFile = async (req, res) => {
       });
     }
 
-    if (user.role !== "admin")
+    if (user.role !== "super_admin")
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
 
@@ -260,9 +260,9 @@ export const changeAlt = async (req, res) => {
 
     // 2. Verify Admin permissions
     const user = await UserModel.findById(req.user.id);
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "super_admin") {
       return res.status(403).json({
-        message: "Access denied. Admins only.",
+        message: "Access denied. Super Admins only.",
         success: false,
       });
     }
@@ -281,7 +281,7 @@ export const changeAlt = async (req, res) => {
     }
 
     // 5. Update the fields (only if they were provided in the request)
-    if (altText !== undefined) file.altText = altText;
+    if (altText !== undefined) file.alt = altText;
     if (filename !== undefined) file.filename = filename;
 
     // Save the updated document

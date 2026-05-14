@@ -12,7 +12,7 @@ export const auditLogRouter = express.Router();
 auditLogRouter.get(
   "/admin/audit-logs",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   getAuditLogs,
 );
 
@@ -20,6 +20,6 @@ auditLogRouter.get(
 auditLogRouter.get(
   "/admin/audit-logs/user/:userId",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   getAuditLogsByUser,
 );

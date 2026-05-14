@@ -6,6 +6,7 @@ import {
   updateSubscriberStatus,
 } from "../controllers/subcriber.controller.js";
 import { authMiddleWare } from "../middleware/authMiddleWare.js";
+import roleCheck from "../middleware/roleCheck.js";
 
 export const subscriberRouter = express.Router();
 
@@ -13,12 +14,13 @@ export const subscriberRouter = express.Router();
 subscriberRouter.post("/subscriber/new", newSubscriber);
 
 // @route GET /api/subscribers
-subscriberRouter.get("/subscribers", authMiddleWare, getAllSubscriber);
+subscriberRouter.get("/subscribers", authMiddleWare, roleCheck("super_admin"), getAllSubscriber);
 
 // @route PUT /api/subscriber/update/:id
 subscriberRouter.put(
   "/subscriber/update/:id",
   authMiddleWare,
+  roleCheck("super_admin"),
   updateSubscriberStatus,
 );
 
@@ -26,5 +28,6 @@ subscriberRouter.put(
 subscriberRouter.delete(
   "/subscriber/delete/:id",
   authMiddleWare,
+  roleCheck("super_admin"),
   deleteSubscriber,
 );

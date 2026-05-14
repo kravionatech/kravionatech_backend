@@ -75,7 +75,7 @@ export const getAllMessages = async (req, res) => {
         .json({ message: "User not found", success: false });
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res
         .status(403)
         .json({ message: "Forbidden: Access denied", success: false });
@@ -121,7 +121,7 @@ export const updateMessageStatus = async (req, res) => {
         .json({ message: "User not found", success: false });
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res
         .status(403)
         .json({ message: "Forbidden: Access denied", success: false });
@@ -171,7 +171,7 @@ export const readMessage = async (req, res) => {
         .json({ message: "User not found", success: false });
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res
         .status(403)
         .json({ message: "Forbidden: Access denied", success: false });
@@ -209,7 +209,7 @@ export const deleteMessage = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res.status(403).json({ message: "Forbidden: Access denied" });
     }
 

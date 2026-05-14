@@ -61,7 +61,7 @@ export const getAllSubscriber = async (req, res) => {
         success: false,
       });
     }
-    if (user.role !== "admin") {
+    if (user.role !== "super_admin") {
       return res.status(403).json({
         message: "Access denied. Admins only.",
         success: false,
@@ -108,7 +108,7 @@ export const getAllSubscriber = async (req, res) => {
 // update subscriber status
 export const updateSubscriberStatus = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "super_admin") {
       return res.status(403).json({
         message: "Access denied. Admins only.",
         success: false,
@@ -154,7 +154,7 @@ export const updateSubscriberStatus = async (req, res) => {
 
 export const deleteSubscriber = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "super_admin") {
       return res.status(403).json({
         message: "Access denied. Admins only.",
         success: false,

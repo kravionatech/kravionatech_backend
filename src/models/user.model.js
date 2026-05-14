@@ -78,9 +78,8 @@ const userSchema = new Schema(
     role: {
       type: String,
       default: "user",
-      // Guideline roles added: super_admin, viewer
-      // Legacy roles kept: user, author — so existing data isn't broken
-      enum: ["super_admin", "admin", "editor", "author", "user", "viewer"],
+      // Refactored to clean 2-role architecture: super_admin, user
+      enum: ["super_admin", "user"],
     },
 
 

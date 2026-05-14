@@ -14,17 +14,17 @@ export const siteSettingRouter = express.Router();
 // Public — key:value map only
 siteSettingRouter.get("/settings/public", getPublicSettings);
 
-// Admin — all fields
-siteSettingRouter.get("/admin/settings", authMiddleWare, getAllSettings);
+// Admin — all fields (super_admin only)
+siteSettingRouter.get("/admin/settings", authMiddleWare, roleCheck("super_admin"), getAllSettings);
 
-// Admin — by group
-siteSettingRouter.get("/admin/settings/:group", authMiddleWare, getSettingsByGroup);
+// Admin — by group (super_admin only)
+siteSettingRouter.get("/admin/settings/:group", authMiddleWare, roleCheck("super_admin"), getSettingsByGroup);
 
 // Admin — bulk update [{ key, value }]
 siteSettingRouter.put(
   "/admin/settings",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   bulkUpdateSettings,
 );
 
@@ -32,6 +32,6 @@ siteSettingRouter.put(
 siteSettingRouter.put(
   "/admin/settings/:key",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   updateSingleSetting,
 );

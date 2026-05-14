@@ -16,38 +16,38 @@ export const emailCampaignRouter = express.Router();
 emailCampaignRouter.post(
   "/admin/campaigns",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   createCampaign,
 );
 
-emailCampaignRouter.get("/admin/campaigns", authMiddleWare, getCampaigns);
+emailCampaignRouter.get("/admin/campaigns", authMiddleWare, roleCheck("super_admin"), getCampaigns);
 
-emailCampaignRouter.get("/admin/campaign/:id", authMiddleWare, getCampaignById);
+emailCampaignRouter.get("/admin/campaign/:id", authMiddleWare, roleCheck("super_admin"), getCampaignById);
 
 emailCampaignRouter.put(
   "/admin/campaign/:id",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   updateCampaign,
 );
 
 emailCampaignRouter.delete(
   "/admin/campaign/:id",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   deleteCampaign,
 );
 
 emailCampaignRouter.post(
   "/admin/campaign/:id/send",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   sendCampaign,
 );
 
 emailCampaignRouter.post(
   "/admin/campaign/:id/schedule",
   authMiddleWare,
-  roleCheck("admin", "super_admin"),
+  roleCheck("super_admin"),
   scheduleCampaign,
 );

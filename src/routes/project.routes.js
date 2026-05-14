@@ -17,7 +17,7 @@ projectRouter.get("/projects", getPublicProjects);                       // ?cat
 projectRouter.get("/project/:slug", getProjectBySlug);
 
 // Admin
-projectRouter.post("/admin/projects", authMiddleWare, roleCheck("admin", "super_admin"), createProject);
-projectRouter.get("/admin/projects", authMiddleWare, getAdminProjects);
-projectRouter.put("/admin/project/:id", authMiddleWare, roleCheck("admin", "super_admin"), updateProject);
-projectRouter.delete("/admin/project/:id", authMiddleWare, roleCheck("admin", "super_admin"), deleteProject);
+projectRouter.post("/admin/projects", authMiddleWare, roleCheck("super_admin"), createProject);
+projectRouter.get("/admin/projects", authMiddleWare, roleCheck("super_admin"), getAdminProjects);
+projectRouter.put("/admin/project/:id", authMiddleWare, roleCheck("super_admin"), updateProject);
+projectRouter.delete("/admin/project/:id", authMiddleWare, roleCheck("super_admin"), deleteProject);

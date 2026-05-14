@@ -27,7 +27,7 @@ export const createCategory = async (req, res) => {
     const user = await UserModel.findOne({ email: req.user.email });
     console.log(user);
 
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "super_admin") {
       return res.status(403).json({
         message: "Forbidden: You do not have permission to create a category",
         success: false,
@@ -159,7 +159,7 @@ export const getAllCategoriesAdmin = async (req, res) => {
     if (!req.user)
       return res.status(401).json({ message: "Unauthorized", success: false });
     const user = await UserModel.findById(req.user.id);
-    if (user.role !== "admin")
+    if (user.role !== "super_admin")
       return res.status(403).json({ message: "Forbidden", success: false });
 
     const page = parseInt(req.query.page) || 1;
@@ -202,7 +202,7 @@ export const updateCategory = async (req, res) => {
     if (!req.user)
       return res.status(401).json({ message: "Unauthorized", success: false });
     const user = await UserModel.findById(req.user.id);
-    if (!user || user.role !== "admin")
+    if (!user || user.role !== "super_admin")
       return res.status(403).json({ message: "Forbidden", success: false });
 
     let category = await CategoryModel.findById(id);
@@ -253,7 +253,7 @@ export const deleteCategory = async (req, res) => {
     if (!req.user)
       return res.status(401).json({ message: "Unauthorized", success: false });
     const user = await UserModel.findById(req.user.id);
-    if (!user || user.role !== "admin")
+    if (!user || user.role !== "super_admin")
       return res.status(403).json({ message: "Forbidden", success: false });
 
     const category = await CategoryModel.findByIdAndDelete(id);

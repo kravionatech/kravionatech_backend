@@ -15,7 +15,7 @@ export const testimonialRouter = express.Router();
 testimonialRouter.get("/testimonials", getPublicTestimonials);          // ?featured=true&page&limit
 
 // Admin
-testimonialRouter.post("/admin/testimonials", authMiddleWare, roleCheck("admin", "super_admin"), createTestimonial);
-testimonialRouter.get("/admin/testimonials", authMiddleWare, getAdminTestimonials);
-testimonialRouter.put("/admin/testimonial/:id", authMiddleWare, roleCheck("admin", "super_admin"), updateTestimonial);
-testimonialRouter.delete("/admin/testimonial/:id", authMiddleWare, roleCheck("admin", "super_admin"), deleteTestimonial);
+testimonialRouter.post("/admin/testimonials", authMiddleWare, roleCheck("super_admin"), createTestimonial);
+testimonialRouter.get("/admin/testimonials", authMiddleWare, roleCheck("super_admin"), getAdminTestimonials);
+testimonialRouter.put("/admin/testimonial/:id", authMiddleWare, roleCheck("super_admin"), updateTestimonial);
+testimonialRouter.delete("/admin/testimonial/:id", authMiddleWare, roleCheck("super_admin"), deleteTestimonial);
