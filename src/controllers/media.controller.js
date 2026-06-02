@@ -50,19 +50,23 @@ export const uploadFile = async (req, res) => {
         targetFolder = "kraviona/docs";
       }
       console.log("Uploading  ...");
-      // 2. Cloudinary Upload Function
-      const result = await cloudinary.uploader.upload(
-        file?.path,
-        {
+      // 2. Cloudinary Upload — pass a promise so we can await and surface errors
+      let result;
+      try {
+        result = await cloudinary.uploader.upload(file.path, {
           resource_type: "auto",
           folder: targetFolder,
-        },
-        (error, result) => {
-          if (error) {
-            console.log("Cloudinary Error:", error);
-          }
-        },
-      );
+        });
+      } catch (cldErr) {
+        console.error("Cloudinary Error:", cldErr);
+        // Clean up the local temp file we wrote to disk
+        await fs.promises.unlink(file.path).catch(() => {});
+        return res.status(502).json({
+          success: false,
+          message: "File upload to storage failed",
+          error: cldErr.message,
+        });
+      }
 
       const newFile = await MediaModel({
         url: result.secure_url,
@@ -132,17 +136,16 @@ export const getAllFiles = async (req, res) => {
         success: false,
       });
 
-    // pagination
+    // Admin scope — see every file uploaded by every user
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 25;
     const skip = (page - 1) * limit;
-    const files = await MediaModel.find({
-      userID: user._id,
-    })
-      .select("url filename authorDetails format size")
-      .sort({
-        createdAt: -1,
-      })
+    const filter = {};
+    if (req.query.userId) filter.userID = req.query.userId;
+
+    const files = await MediaModel.find(filter)
+      .select("url filename authorDetails format size userID createdAt")
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 

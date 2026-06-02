@@ -1,8 +1,6 @@
-import { token } from "morgan";
 import { SubscriberModel } from "../models/subscriber.model.js";
 import { UserModel } from "../models/user.model.js";
 import { authTokenGenerate } from "../utils/authTokenGenerate.js";
-import { DateAndTimeFormat } from "../utils/DateAndTimeFormat.js";
 import {
   sendEmail,
   OTPSENDUI,
@@ -17,6 +15,9 @@ import { UAParser } from "ua-parser-js";
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 import { TokenBlacklistModel } from "../models/TokenBlacklist.model.js";
+
+// All admin-like roles per API_GUIDE.md role permissions table
+const ADMIN_ROLES = ["super_admin", "admin", "editor", "viewer"];
 
 
 // ===============================
@@ -216,8 +217,11 @@ export const accountCodeVerification = async (req, res) => {
         lastActiveAt: new Date(),
       }).save();
 
-      // Clear OTP after successful verification
-      user.verification.otp = null;
+      // Clear OTPs after successful verification
+      user.verification.emailOtp = null;
+      user.verification.phoneOtp = null;
+      user.verification.emailOtpExpires = null;
+      user.verification.phoneOtpExpires = null;
 
       // Mark verification status as true
       user.verification.isVerified = true;
@@ -379,6 +383,25 @@ export const logInWithOTP = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Your account has been blocked by the administrator.",
+      });
+    }
+
+    // OTP must exist
+    if (!user.verification.emailOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "No active OTP. Please request a new one.",
+      });
+    }
+
+    // Enforce OTP expiry (model default = 5 min)
+    if (
+      user.verification.emailOtpExpires &&
+      user.verification.emailOtpExpires < new Date()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one.",
       });
     }
 
@@ -567,9 +590,11 @@ export const editAccount = async (req, res) => {
       avatar,
       bio,
       jobTitle,
-      socialMediaName,
+      socialLinks,            // preferred: array of { name, url }
+      socialMediaName,        // legacy: single link shortcut
       socialMediaUrl,
-      emailNotification,
+      emailNotifications,     // preferred: camelCase boolean
+      emailNotification,      // legacy: alternate key
     } = req.body;
 
     if (!req.user || !req.user.id)
@@ -587,24 +612,49 @@ export const editAccount = async (req, res) => {
         .status(404)
         .json({ message: "User not found", success: false });
 
-    await user.updateOne({
-      username: username || user.username,
-      phone: phone || user.phone,
-      avatar: avatar || user.avatar,
-      "profile.bio": bio || user.profile.bio,
-      "profile.jobTitle": jobTitle || user.profile.jobTitle,
-      "profile.socialLinks": [
-        {
-          name: socialMediaName,
-          url: socialMediaUrl,
-        },
-      ],
-      "preferences.emailNotifications": emailNotification,
-    });
+    // Build the $set payload — only include fields the caller actually sent
+    const update = {};
+
+    if (typeof username === "string" && username.trim()) update.username = username.trim();
+    if (typeof phone === "string" && phone.trim()) update.phone = phone.trim();
+    if (typeof avatar === "string" && avatar.trim()) update.avatar = avatar.trim();
+
+    if (typeof bio === "string") update["profile.bio"] = bio;
+    if (typeof jobTitle === "string") update["profile.jobTitle"] = jobTitle;
+
+    // socialLinks handling — accept either a full array (merge) or a single
+    // {name,url} shortcut from the legacy form. Never clobber the existing
+    // array — only add the new entry.
+    if (Array.isArray(socialLinks) && socialLinks.length > 0) {
+      const existing = user.profile?.socialLinks || [];
+      update["profile.socialLinks"] = [...existing, ...socialLinks];
+    } else if (socialMediaName && socialMediaUrl) {
+      const existing = user.profile?.socialLinks || [];
+      update["profile.socialLinks"] = [
+        ...existing,
+        { name: socialMediaName, url: socialMediaUrl },
+      ];
+    }
+
+    if (typeof emailNotifications === "boolean") {
+      update["preferences.emailNotifications"] = emailNotifications;
+    } else if (typeof emailNotification === "boolean") {
+      update["preferences.emailNotifications"] = emailNotification;
+    }
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No editable fields supplied",
+      });
+    }
+
+    await user.updateOne({ $set: update });
 
     return res.status(200).json({
       message: "Account details updated successfully",
-      success: true
+      success: true,
+      data: update,
     });
   } catch (error) {
     return res.status(500).json({
@@ -712,14 +762,35 @@ export const getAllUsers = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────
 // SUPER_ADMIN ONLY: Update user role
+// Allowed roles match the 5-role hierarchy in API_GUIDE.md
 // ─────────────────────────────────────────────────────────────
 export const updateUserRole = async (req, res) => {
   try {
     const { userId, role } = req.body;
-    const validRoles = ["super_admin", "user"];
+    const validRoles = ["super_admin", "admin", "editor", "viewer", "user"];
 
     if (!validRoles.includes(role)) {
-      return res.status(400).json({ success: false, message: "Invalid role" });
+      return res.status(400).json({
+        success: false,
+        message: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      });
+    }
+
+    // Guard rail — never demote the last super_admin
+    if (role !== "super_admin") {
+      const target = await UserModel.findById(userId).select("role");
+      if (!target) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      if (target.role === "super_admin") {
+        const remaining = await UserModel.countDocuments({ role: "super_admin" });
+        if (remaining <= 1) {
+          return res.status(400).json({
+            success: false,
+            message: "Cannot demote the last super_admin",
+          });
+        }
+      }
     }
 
     const user = await UserModel.findByIdAndUpdate(
@@ -776,13 +847,24 @@ export const toggleUserBlock = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────
 // SUPER_ADMIN ONLY: Delete user
+// Guard rail: never delete the last super_admin
 // ─────────────────────────────────────────────────────────────
 export const deleteUser = async (req, res) => {
   try {
-    const user = await UserModel.findByIdAndDelete(req.params.id);
-    if (!user) {
+    const target = await UserModel.findById(req.params.id).select("role");
+    if (!target) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+    if (target.role === "super_admin") {
+      const remaining = await UserModel.countDocuments({ role: "super_admin" });
+      if (remaining <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot delete the last super_admin",
+        });
+      }
+    }
+    await UserModel.findByIdAndDelete(req.params.id);
     return res.status(200).json({
       success: true,
       message: "User deleted successfully",

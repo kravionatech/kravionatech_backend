@@ -236,10 +236,23 @@ export const publishedDetailsPost = async (req, res) => {
   }
 };
 
+// Public reaction endpoint
+// Body: { type: "like" | "dislike" | "share" }
+// This matches the documented shape in API_GUIDE.md and the analytics module.
 export const PostReaction = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { like, dislike, share } = req.body;
+    const { type } = req.body;
+    const allowed = ["like", "dislike", "share"];
+
+    if (!type || !allowed.includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: { type: [`Must be one of: ${allowed.join(", ")}`] },
+      });
+    }
+
     const post = await PostModel.findOne({ slug });
     if (!post) {
       return res.status(404).json({
@@ -248,16 +261,13 @@ export const PostReaction = async (req, res) => {
       });
     }
 
-    post.reactions.like += like || 0;
-    post.reactions.dislike += dislike || 0;
-    post.reactions.share += share || 0;
-
+    post.reactions[type] = (post.reactions[type] || 0) + 1;
     await post.save();
 
     return res.status(200).json({
       message: "Reaction updated successfully",
       success: true,
-      data: post,
+      data: { slug, reactions: post.reactions },
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

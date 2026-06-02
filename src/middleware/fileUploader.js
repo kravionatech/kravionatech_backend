@@ -37,8 +37,12 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Multer expects fileSize in bytes (Number), not a string. Cap at 100 MB which
+// is the practical limit we'll let through to Cloudinary.
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
 export const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: "5gb" },
+  limits: { fileSize: MAX_FILE_SIZE },
 });

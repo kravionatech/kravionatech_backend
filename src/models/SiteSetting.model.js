@@ -4,6 +4,11 @@ import mongoose from "mongoose";
  * SiteSetting Model — Module 7
  * Key-value store for dynamic site configuration.
  * Admins can change any text/image/JSON without redeployment.
+ *
+ * NOTE: The dynamization spec §1 calls for a SINGLE SiteConfig
+ * document (with rich structured fields). The SiteConfigModel
+ * below implements that. The SiteSettingModel key/value store
+ * is preserved for backward compatibility with existing callers.
  */
 const siteSettingSchema = new mongoose.Schema(
   {
@@ -50,7 +55,7 @@ const siteSettingSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // updatedAt auto-updated on save
+    timestamps: true,
   },
 );
 

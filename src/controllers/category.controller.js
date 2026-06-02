@@ -25,7 +25,6 @@ export const createCategory = async (req, res) => {
     }
 
     const user = await UserModel.findOne({ email: req.user.email });
-    console.log(user);
 
     if (!user || user.role !== "super_admin") {
       return res.status(403).json({
@@ -34,11 +33,14 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    // Check if category name or slug already exists to prevent duplicate key errors
-    const existingCategory = await CategoryModel.findOne({ name });
+    // Check both name and slug for duplicates to prevent 11000 surprises
+    const slug = slugify(name, { lower: true });
+    const existingCategory = await CategoryModel.findOne({
+      $or: [{ name }, { slug }],
+    });
     if (existingCategory) {
-      return res.status(400).json({
-        message: "Category with this name already exists",
+      return res.status(409).json({
+        message: "Category with this name or slug already exists",
         success: false,
       });
     }
@@ -47,7 +49,7 @@ export const createCategory = async (req, res) => {
       name,
       description,
       image,
-      slug: slugify(name, { lower: true }),
+      slug,
       userID: user._id,
       authorDetails: {
         name: user.name,
