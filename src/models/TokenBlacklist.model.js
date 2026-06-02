@@ -25,7 +25,6 @@ const tokenBlacklistSchema = new mongoose.Schema({
 
 // TTL — MongoDB removes docs once expiresAt has passed
 tokenBlacklistSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-tokenBlacklistSchema.index({ token: 1 });
 
 export const TokenBlacklistModel =
   mongoose.models.TokenBlacklist ||

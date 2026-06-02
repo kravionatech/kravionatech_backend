@@ -1,4 +1,4 @@
-import { TestimonialModel } from "../models/Testimonial.model.js";
+﻿import { TestimonialModel } from "../models/Testimonial.model.js";
 
 const listResponse = (res, data, total, page, limit) =>
   res.status(200).json({
@@ -29,7 +29,7 @@ export const createTestimonial = async (req, res) => {
   }
 };
 
-// GET /api/testimonials — published only
+// GET /api/testimonials â€” published only
 export const getPublicTestimonials = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -54,7 +54,7 @@ export const getPublicTestimonials = async (req, res) => {
   }
 };
 
-// GET /api/admin/testimonials — all
+// GET /api/admin/testimonials â€” all
 export const getAdminTestimonials = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -81,7 +81,7 @@ export const getAdminTestimonials = async (req, res) => {
 export const updateTestimonial = async (req, res) => {
   try {
     const t = await TestimonialModel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     });
     if (!t)
@@ -115,3 +115,4 @@ export const deleteTestimonial = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+

@@ -1,9 +1,9 @@
-import { MessageModel } from "../models/message.model.js";
+﻿import { MessageModel } from "../models/message.model.js";
 
-// ─────────────────────────────────────────────────────────────
-// PATCH /api/admin/messages/:id/assign   →  auth
-// Body: { userId }  — assign message to a team member
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// PATCH /api/admin/messages/:id/assign   â†’  auth
+// Body: { userId }  â€” assign message to a team member
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const assignMessage = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -18,7 +18,7 @@ export const assignMessage = async (req, res) => {
     const message = await MessageModel.findByIdAndUpdate(
       req.params.id,
       { $set: { assignedTo: userId } },
-      { new: true },
+      { returnDocument: "after" },
     ).populate("assignedTo", "name email username");
 
     if (!message)
@@ -36,10 +36,10 @@ export const assignMessage = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// POST /api/admin/messages/:id/note   →  auth
-// Body: { text }  — add an internal note
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// POST /api/admin/messages/:id/note   â†’  auth
+// Body: { text }  â€” add an internal note
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const addMessageNote = async (req, res) => {
   try {
     const { text } = req.body;
@@ -60,7 +60,7 @@ export const addMessageNote = async (req, res) => {
     const message = await MessageModel.findByIdAndUpdate(
       req.params.id,
       { $push: { notes: note } },
-      { new: true },
+      { returnDocument: "after" },
     ).populate("notes.addedBy", "name email username");
 
     if (!message)
@@ -78,10 +78,10 @@ export const addMessageNote = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// GET /api/admin/leads/stats   →  auth
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// GET /api/admin/leads/stats   â†’  auth
 // Returns CRM summary stats
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getLeadsStats = async (req, res) => {
   try {
     const now = new Date();
@@ -115,3 +115,4 @@ export const getLeadsStats = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+

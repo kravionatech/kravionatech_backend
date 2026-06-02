@@ -101,7 +101,7 @@ const projectSchema = new mongoose.Schema(
     clientLogo: {
       url: { type: String, trim: true },
     },
-    industry: { type: String, trim: true, index: true },
+    industry: { type: String, trim: true },
     projectType: {
       type: String,
       enum: [
@@ -114,7 +114,6 @@ const projectSchema = new mongoose.Schema(
         "other",
       ],
       default: "web-app",
-      index: true,
     },
     thumbnail: {
       url: { type: String, trim: true },
@@ -132,10 +131,9 @@ const projectSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "archived"],
       default: "active",
-      index: true,
     },
-    isActive: { type: Boolean, default: true, index: true },
-    order: { type: Number, default: 0, index: true },
+    isActive: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
     seo: { type: seoSchema, default: () => ({}) },
   },
   { timestamps: true },
@@ -154,7 +152,6 @@ projectSchema.pre("save", function (next) {
   next();
 });
 
-projectSchema.index({ slug: 1 });
 projectSchema.index({ isPublished: 1, isActive: 1, status: 1 });
 projectSchema.index({ serviceCategory: 1 });
 projectSchema.index({ isFeatured: 1 });

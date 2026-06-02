@@ -1,4 +1,4 @@
-import slugify from "slugify";
+﻿import slugify from "slugify";
 import { CategoryModel } from "../models/category.model.js";
 import { PostModel } from "../models/post.model.js";
 import { UserModel } from "../models/user.model.js";
@@ -210,7 +210,7 @@ export const publishedDetailsPost = async (req, res) => {
     const post = await PostModel.findOneAndUpdate(
       { slug },
       { $inc: { views: 1 } },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!post) {
       return res.status(404).json({
@@ -380,7 +380,7 @@ export const editPost = async (req, res) => {
     }
     const { slug } = req.params;
     const updateData = req.body;
-    const post = await PostModel.findOneAndUpdate({ slug }, updateData, { new: true });
+    const post = await PostModel.findOneAndUpdate({ slug }, updateData, { returnDocument: "after" });
     if (!post) {
       return res.status(404).json({ message: "Post not found", success: false });
     }
@@ -418,3 +418,4 @@ export const updateKeyword = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+

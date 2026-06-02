@@ -1,8 +1,8 @@
-/**
- * SiteConfig controller — dynamization spec §1.2
+﻿/**
+ * SiteConfig controller â€” dynamization spec Â§1.2
  *
- * GET  /api/v1/public/site-config  → Public (Redis 10 min)
- * PUT  /api/v1/site-config         → Protected: super_admin
+ * GET  /api/v1/public/site-config  â†’ Public (Redis 10 min)
+ * PUT  /api/v1/site-config         â†’ Protected: super_admin
  *
  * The single source of truth for ALL global content.
  * The cache layer (cacheMiddleware) wraps the public GET.
@@ -10,10 +10,10 @@
 import { SiteConfigModel, SITE_CONFIG_ID } from "../models/SiteConfig.model.js";
 import { invalidateCache } from "../utils/cache.js";
 
-// ─────────────────────────────────────────────────────────────
-// Public — returns the single SiteConfig doc (or sensible
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Public â€” returns the single SiteConfig doc (or sensible
 // defaults if it has never been seeded).
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getPublicSiteConfig = async (_req, res, next) => {
   try {
     let doc = await SiteConfigModel.findById(SITE_CONFIG_ID).lean();
@@ -29,18 +29,18 @@ export const getPublicSiteConfig = async (_req, res, next) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// Protected — upsert the SiteConfig doc, then bust the cache.
-// Body is the full SiteConfig shape (partial updates welcome —
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Protected â€” upsert the SiteConfig doc, then bust the cache.
+// Body is the full SiteConfig shape (partial updates welcome â€”
 // the spec only requires super_admin role to call this).
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateSiteConfig = async (req, res, next) => {
   try {
     const update = { ...req.body, _id: SITE_CONFIG_ID };
     const doc = await SiteConfigModel.findByIdAndUpdate(
       SITE_CONFIG_ID,
       { $set: update },
-      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
+      { returnDocument: "after", upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );
     // Bust the public cache
     await invalidateCache("site-config");
@@ -60,3 +60,4 @@ export const updateSiteConfig = async (req, res, next) => {
     next(err);
   }
 };
+

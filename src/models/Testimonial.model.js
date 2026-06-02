@@ -48,8 +48,8 @@ const testimonialSchema = new mongoose.Schema(
       ref: "Project",
     },
 
-    isPublished: { type: Boolean, default: false, index: true },
-    isFeatured: { type: Boolean, default: false, index: true },
+    isPublished: { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false },
 
     // ── New fields per dynamization spec §7.1 ─────────────
     designation: { type: String, trim: true },                  // spec alias for clientRole
@@ -71,8 +71,8 @@ const testimonialSchema = new mongoose.Schema(
       default: "direct",
     },
     platformReviewUrl: { type: String, trim: true },
-    isApproved: { type: Boolean, default: false, index: true },
-    order: { type: Number, default: 0, index: true },
+    isApproved: { type: Boolean, default: false },
+    order: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

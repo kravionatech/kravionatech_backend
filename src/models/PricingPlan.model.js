@@ -57,17 +57,16 @@ const pricingPlanSchema = new mongoose.Schema(
       type: String,
       enum: ["web-development", "seo", "maintenance", "custom"],
       default: "web-development",
-      index: true,
     },
-    isPopular: { type: Boolean, default: false, index: true },
+    isPopular: { type: Boolean, default: false },
     isHighlighted: { type: Boolean, default: false },
     features: { type: [featureSchema], default: [] },
     cta: { type: ctaSchema, default: () => ({}) },
     deliverables: [{ type: String, trim: true }],
     idealFor: { type: String, trim: true },
     timeframe: { type: String, trim: true },
-    order: { type: Number, default: 0, index: true },
-    isActive: { type: Boolean, default: true, index: true },
+    order: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
@@ -79,7 +78,6 @@ pricingPlanSchema.pre("save", function (next) {
   next();
 });
 
-pricingPlanSchema.index({ slug: 1 });
 pricingPlanSchema.index({ isActive: 1, order: 1 });
 
 export const PricingPlanModel =

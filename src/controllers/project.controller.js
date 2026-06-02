@@ -1,4 +1,4 @@
-import { ProjectModel } from "../models/Project.model.js";
+﻿import { ProjectModel } from "../models/Project.model.js";
 import { ServiceModel } from "../models/service.model.js";
 import slugify from "slugify";
 
@@ -12,9 +12,9 @@ const listResponse = (res, data, total, page, limit) =>
     totalPages: Math.ceil(total / limit),
   });
 
-// ─────────────────────────────────────────────────────────────
-// POST /api/admin/projects   →  auth + roleCheck(admin)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// POST /api/admin/projects   â†’  auth + roleCheck(admin)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const createProject = async (req, res) => {
   try {
     const { title } = req.body;
@@ -32,7 +32,7 @@ export const createProject = async (req, res) => {
     if (exists)
       return res
         .status(409)
-        .json({ success: false, message: "Duplicate entry — slug already exists" });
+        .json({ success: false, message: "Duplicate entry â€” slug already exists" });
 
     const project = await ProjectModel.create({ ...req.body, slug });
     return res
@@ -42,15 +42,15 @@ export const createProject = async (req, res) => {
     if (error.code === 11000)
       return res
         .status(409)
-        .json({ success: false, message: "Duplicate entry — slug already exists" });
+        .json({ success: false, message: "Duplicate entry â€” slug already exists" });
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// GET /api/projects   →  Public
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// GET /api/projects   â†’  Public
 // Query: ?category=slug&page&limit
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getPublicProjects = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -80,9 +80,9 @@ export const getPublicProjects = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// GET /api/project/:slug   →  Public
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// GET /api/project/:slug   â†’  Public
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getProjectBySlug = async (req, res) => {
   try {
     const project = await ProjectModel.findOne({
@@ -99,9 +99,9 @@ export const getProjectBySlug = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// GET /api/admin/projects   →  auth (all)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// GET /api/admin/projects   â†’  auth (all)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getAdminProjects = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -126,9 +126,9 @@ export const getAdminProjects = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// PUT /api/admin/project/:id   →  auth + roleCheck(admin)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// PUT /api/admin/project/:id   â†’  auth + roleCheck(admin)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateProject = async (req, res) => {
   try {
     const project = await ProjectModel.findById(req.params.id);
@@ -140,13 +140,13 @@ export const updateProject = async (req, res) => {
       if (exists)
         return res
           .status(409)
-          .json({ success: false, message: "Duplicate entry — slug already exists" });
+          .json({ success: false, message: "Duplicate entry â€” slug already exists" });
     }
 
     const updated = await ProjectModel.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     return res.status(200).json({
       success: true,
@@ -160,9 +160,9 @@ export const updateProject = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
-// DELETE /api/admin/project/:id   →  auth + roleCheck(admin)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// DELETE /api/admin/project/:id   â†’  auth + roleCheck(admin)
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const deleteProject = async (req, res) => {
   try {
     const project = await ProjectModel.findByIdAndDelete(req.params.id);
@@ -179,3 +179,4 @@ export const deleteProject = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+

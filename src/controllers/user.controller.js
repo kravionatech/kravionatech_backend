@@ -1,4 +1,4 @@
-import { SubscriberModel } from "../models/subscriber.model.js";
+﻿import { SubscriberModel } from "../models/subscriber.model.js";
 import { UserModel } from "../models/user.model.js";
 import { authTokenGenerate } from "../utils/authTokenGenerate.js";
 import {
@@ -290,7 +290,7 @@ export const resendOTP = async (req, res) => {
 
     /*
         ---------------------------------
-        If OTP is null → generate new OTP
+        If OTP is null â†’ generate new OTP
         ---------------------------------
     */
     if (user.verification.emailOtp === null) {
@@ -314,7 +314,7 @@ export const resendOTP = async (req, res) => {
     } else {
       /*
         ---------------------------------
-        If OTP already exists → generate new OTP to resend
+        If OTP already exists â†’ generate new OTP to resend
         ---------------------------------
       */
       const generatedOTP = generateOTP().toString();
@@ -612,7 +612,7 @@ export const editAccount = async (req, res) => {
         .status(404)
         .json({ message: "User not found", success: false });
 
-    // Build the $set payload — only include fields the caller actually sent
+    // Build the $set payload â€” only include fields the caller actually sent
     const update = {};
 
     if (typeof username === "string" && username.trim()) update.username = username.trim();
@@ -622,9 +622,9 @@ export const editAccount = async (req, res) => {
     if (typeof bio === "string") update["profile.bio"] = bio;
     if (typeof jobTitle === "string") update["profile.jobTitle"] = jobTitle;
 
-    // socialLinks handling — accept either a full array (merge) or a single
+    // socialLinks handling â€” accept either a full array (merge) or a single
     // {name,url} shortcut from the legacy form. Never clobber the existing
-    // array — only add the new entry.
+    // array â€” only add the new entry.
     if (Array.isArray(socialLinks) && socialLinks.length > 0) {
       const existing = user.profile?.socialLinks || [];
       update["profile.socialLinks"] = [...existing, ...socialLinks];
@@ -667,7 +667,7 @@ export const editAccount = async (req, res) => {
 
 
 // ========================================
-// Refresh Token — check blacklist, issue new accessToken
+// Refresh Token â€” check blacklist, issue new accessToken
 // POST /api/auth/refresh-token
 // Body: { token }  (refreshToken)
 // ========================================
@@ -681,7 +681,7 @@ export const refreshToken = async (req, res) => {
     // Reject if token has been blacklisted (logged out)
     const blacklisted = await TokenBlacklistModel.findOne({ token });
     if (blacklisted) {
-      return res.status(401).json({ success: false, message: "Token has been invalidated — please log in again" });
+      return res.status(401).json({ success: false, message: "Token has been invalidated â€” please log in again" });
     }
 
     const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
@@ -699,7 +699,7 @@ export const refreshToken = async (req, res) => {
 };
 
 // ========================================
-// Logout — blacklist the refreshToken
+// Logout â€” blacklist the refreshToken
 // POST /api/auth/logout
 // Body: { token }  (refreshToken to invalidate)
 // ========================================
@@ -716,7 +716,7 @@ export const logout = async (req, res) => {
       const decoded = jwt.verify(token, config.JWT_SECRET_KEY);
       expiresAt = new Date(decoded.exp * 1000);
     } catch (_) {
-      // Token expired or invalid — still blacklist for safety, expire in 7 days
+      // Token expired or invalid â€” still blacklist for safety, expire in 7 days
       expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     }
 
@@ -733,9 +733,9 @@ export const logout = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ADMIN ONLY: Get all users
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const getAllUsers = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -760,10 +760,10 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUPER_ADMIN ONLY: Update user role
 // Allowed roles match the 5-role hierarchy in API_GUIDE.md
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateUserRole = async (req, res) => {
   try {
     const { userId, role } = req.body;
@@ -776,7 +776,7 @@ export const updateUserRole = async (req, res) => {
       });
     }
 
-    // Guard rail — never demote the last super_admin
+    // Guard rail â€” never demote the last super_admin
     if (role !== "super_admin") {
       const target = await UserModel.findById(userId).select("role");
       if (!target) {
@@ -796,7 +796,7 @@ export const updateUserRole = async (req, res) => {
     const user = await UserModel.findByIdAndUpdate(
       userId,
       { role },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!user) {
@@ -813,9 +813,9 @@ export const updateUserRole = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUPER_ADMIN ONLY: Block/Unblock user
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const toggleUserBlock = async (req, res) => {
   try {
     const { id } = req.params;
@@ -828,7 +828,7 @@ export const toggleUserBlock = async (req, res) => {
     const user = await UserModel.findByIdAndUpdate(
       id,
       { isActive },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!user) {
@@ -845,10 +845,10 @@ export const toggleUserBlock = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUPER_ADMIN ONLY: Delete user
 // Guard rail: never delete the last super_admin
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const deleteUser = async (req, res) => {
   try {
     const target = await UserModel.findById(req.params.id).select("role");

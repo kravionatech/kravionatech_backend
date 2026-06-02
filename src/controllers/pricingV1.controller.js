@@ -1,5 +1,5 @@
-/**
- * PricingPlan controller — dynamization spec §6.2
+﻿/**
+ * PricingPlan controller â€” dynamization spec Â§6.2
  *
  * Public (Redis 10min):
  *   GET /api/v1/public/pricing
@@ -50,7 +50,7 @@ export const updatePricing = async (req, res, next) => {
     const updated = await PricingPlanModel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Pricing plan not found" });
@@ -81,3 +81,4 @@ export const deletePricing = async (req, res, next) => {
     next(err);
   }
 };
+

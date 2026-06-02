@@ -59,7 +59,6 @@ const siteSettingSchema = new mongoose.Schema(
   },
 );
 
-siteSettingSchema.index({ key: 1 });
 siteSettingSchema.index({ group: 1 });
 
 export const SiteSettingModel =

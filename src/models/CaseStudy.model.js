@@ -59,7 +59,7 @@ const caseStudySchema = new mongoose.Schema(
     clientLogo: {
       url: { type: String, trim: true },
     },
-    industry: { type: String, trim: true, index: true },
+    industry: { type: String, trim: true },
     heroImage: {
       url: { type: String, trim: true },
       alt: { type: String, trim: true },
@@ -78,15 +78,14 @@ const caseStudySchema = new mongoose.Schema(
     duration: { type: String, trim: true },
     testimonial: { type: testimonialSchema, default: () => ({}) },
     seo: { type: seoSchema, default: () => ({}) },
-    featured: { type: Boolean, default: false, index: true },
+    featured: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["draft", "published", "archived"],
       default: "draft",
-      index: true,
     },
     publishedAt: { type: Date },
-    order: { type: Number, default: 0, index: true },
+    order: { type: Number, default: 0 },
   },
   { timestamps: true },
 );
@@ -101,7 +100,6 @@ caseStudySchema.pre("save", function (next) {
   next();
 });
 
-caseStudySchema.index({ slug: 1 });
 caseStudySchema.index({ status: 1, publishedAt: -1 });
 
 export const CaseStudyModel =

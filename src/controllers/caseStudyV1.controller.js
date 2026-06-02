@@ -1,5 +1,5 @@
-/**
- * CaseStudy controller — dynamization spec §5.2
+﻿/**
+ * CaseStudy controller â€” dynamization spec Â§5.2
  *
  * Public:
  *   GET /api/v1/public/case-studies
@@ -69,7 +69,7 @@ export const updateCaseStudy = async (req, res, next) => {
     const updated = await CaseStudyModel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Case study not found" });
@@ -98,3 +98,4 @@ export const deleteCaseStudy = async (req, res, next) => {
     next(err);
   }
 };
+

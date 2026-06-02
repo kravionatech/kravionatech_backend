@@ -34,7 +34,7 @@ const teamMemberSchema = new mongoose.Schema(
     role: { type: String, trim: true },   // e.g. "Lead Developer"
     bio: { type: String, trim: true },
 
-    avatar: { type: String, trim: true }, // Cloudinary URL (legacy single)
+    avatar: { type: avatarSchema, default: () => ({}) }, // { url, alt } — spec avatar shape
 
     skills: [{ type: String, trim: true }], // e.g. ["React", "Node", "MongoDB"]
 
@@ -44,8 +44,8 @@ const teamMemberSchema = new mongoose.Schema(
       twitter: { type: String, trim: true },
     },
 
-    order: { type: Number, default: 0, index: true },
-    isPublished: { type: Boolean, default: true, index: true },
+    order: { type: Number, default: 0 },
+    isPublished: { type: Boolean, default: true },
 
     // ── New fields per dynamization spec §3.2 ─────────────
     slug: {
@@ -59,7 +59,7 @@ const teamMemberSchema = new mongoose.Schema(
     avatarObj: { type: avatarSchema, default: () => ({}) },     // spec { url, alt }
     email: { type: String, trim: true, lowercase: true },
     social: { type: socialSchema, default: () => ({}) },
-    isActive: { type: Boolean, default: true, index: true },
+    isActive: { type: Boolean, default: true },
     joinedAt: { type: Date, default: Date.now },
   },
   { timestamps: true },
@@ -72,8 +72,14 @@ teamMemberSchema.pre("save", function (next) {
   }
   // Mirror legacy fields for spec compliance
   if (this.role && !this.designation) this.designation = this.role;
-  if (this.avatar && !this.avatarObj?.url) {
+  // If the legacy `avatar` field was populated as a URL string, mirror it
+  // into the spec's `avatarObj` shape. The new shape is already an object.
+  if (typeof this.avatar === "string" && this.avatar && !this.avatarObj?.url) {
     this.avatarObj = { url: this.avatar, alt: this.name };
+  }
+  // Also keep `avatar` populated as the URL string for any legacy readers
+  if (this.avatarObj?.url && !this.avatar) {
+    this.avatar = this.avatarObj.url;
   }
   if (this.socialLinks && Object.keys(this.socialLinks).length && !this.social) {
     this.social = { ...this.socialLinks };
@@ -81,7 +87,6 @@ teamMemberSchema.pre("save", function (next) {
   next();
 });
 
-teamMemberSchema.index({ order: 1 });
 teamMemberSchema.index({ isPublished: 1, isActive: 1 });
 
 export const TeamMemberModel =

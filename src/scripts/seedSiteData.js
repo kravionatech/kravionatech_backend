@@ -773,7 +773,7 @@ const upsertOne = async (Model, key, payload) => {
   const doc = await Model.findOneAndUpdate(
     key,
     { $set: payload },
-    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+    { upsert: true, returnDocument: "after", runValidators: true, setDefaultsOnInsert: true },
   );
   return doc;
 };

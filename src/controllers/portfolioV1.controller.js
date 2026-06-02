@@ -1,5 +1,5 @@
-/**
- * Portfolio (Project) controller — dynamization spec §4.2
+﻿/**
+ * Portfolio (Project) controller â€” dynamization spec Â§4.2
  *
  * Public (Redis 5min):
  *   GET /api/v1/public/portfolio
@@ -96,7 +96,7 @@ export const updatePortfolio = async (req, res, next) => {
     const updated = await ProjectModel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Project not found" });
@@ -111,13 +111,13 @@ export const updatePortfolio = async (req, res, next) => {
   }
 };
 
-// DELETE /api/v1/portfolio/:id  — soft delete
+// DELETE /api/v1/portfolio/:id  â€” soft delete
 export const deletePortfolio = async (req, res, next) => {
   try {
     const updated = await ProjectModel.findByIdAndUpdate(
       req.params.id,
       { $set: { isActive: false, isPublished: false, status: "archived" } },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Project not found" });
@@ -131,3 +131,4 @@ export const deletePortfolio = async (req, res, next) => {
     next(err);
   }
 };
+

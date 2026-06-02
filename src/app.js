@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import mongoSanitize from "express-mongo-sanitize";
 
 // ── Existing Routers ─────────────────────────────────────────
 import { userRouter } from "./routes/user.routes.js";
@@ -42,19 +41,83 @@ export const app = express();
 app.set("trust proxy", true);
 
 // ── CORS ─────────────────────────────────────────────────────
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    credentials: true,
-  }),
-);
+// Explicit origin allowlist (browsers reject `origin: "*"` with
+// `credentials: true` per the CORS spec). Reading from env keeps
+// prod (api.kraviona.com) and admin (adminkraviona.vercel.app)
+// working without code changes.
+const ALLOWED_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  "https://kraviona.com,https://www.kraviona.com,https://adminkraviona.vercel.app,https://api.kraviona.com"
+)
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    // Allow same-origin / curl (no Origin header) and whitelisted origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+  ],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+  maxAge: 86400, // cache preflight for 24h
+};
+
+// Make sure preflight always succeeds (before any other middleware that
+// could throw, e.g. express-mongo-sanitize under Node ≥18).
+app.options("*", cors(corsOptions));
+app.use(cors(corsOptions));
 
 // ── Parsers + security primitives ────────────────────────────
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
-app.use(mongoSanitize());
+
+// ── Lightweight MongoDB operator-injection sanitizer ──────────
+// Replaces the old `express-mongo-sanitize@2.x` which throws on
+// Node ≥18 (req.query is a getter-only in newer Node). We sanitize
+// req.body and req.params in place, and walk req.query's keys
+// (which we are allowed to read; we just can't reassign req.query).
+// This keeps the no-`$`/no-`.`-prefix guarantee without crashing.
+const FORBIDDEN_KEYS = new Set([
+  "$where",
+  "$expr",
+  "$jsonSchema",
+  "$function",
+]);
+const sanitizeValue = (val) => {
+  if (val && typeof val === "object") {
+    for (const k of Object.keys(val)) {
+      if (k.startsWith("$") || k.startsWith(".") || FORBIDDEN_KEYS.has(k)) {
+        delete val[k];
+      } else {
+        sanitizeValue(val[k]);
+      }
+    }
+  }
+  return val;
+};
+app.use((req, _res, next) => {
+  try {
+    if (req.body) sanitizeValue(req.body);
+    if (req.params) sanitizeValue(req.params);
+    if (req.query) sanitizeValue(req.query);
+  } catch {
+    /* never let sanitization break the request */
+  }
+  next();
+});
 
 // Request logging
 if (process.env.NODE_ENV !== "production") {

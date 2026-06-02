@@ -1,4 +1,4 @@
-import { TeamMemberModel } from "../models/TeamMember.model.js";
+﻿import { TeamMemberModel } from "../models/TeamMember.model.js";
 
 const listResponse = (res, data, total, page, limit) =>
   res.status(200).json({
@@ -31,7 +31,7 @@ export const createTeamMember = async (req, res) => {
   }
 };
 
-// GET /api/team — published, sorted by order
+// GET /api/team â€” published, sorted by order
 export const getPublicTeam = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -50,7 +50,7 @@ export const getPublicTeam = async (req, res) => {
   }
 };
 
-// GET /api/admin/team — all members
+// GET /api/admin/team â€” all members
 export const getAdminTeam = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -74,7 +74,7 @@ export const updateTeamMember = async (req, res) => {
     const member = await TeamMemberModel.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!member)
       return res.status(404).json({ success: false, message: "Team member not found" });
@@ -107,3 +107,4 @@ export const deleteTeamMember = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+

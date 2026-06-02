@@ -1,4 +1,4 @@
-import { MessageModel } from "../models/message.model.js";
+﻿import { MessageModel } from "../models/message.model.js";
 import { UserModel } from "../models/user.model.js";
 import { sendEmail } from "../utils/email.js";
 import { createNotification } from "../utils/notification.js";
@@ -125,7 +125,7 @@ export const newMessage = async (req, res) => {
   }
 };
 
-// List all messages — paginated, with optional status / source filter
+// List all messages â€” paginated, with optional status / source filter
 export const getAllMessages = async (req, res) => {
   try {
     if (!req.user) {
@@ -225,7 +225,7 @@ export const updateMessageStatus = async (req, res) => {
     }
 
     const message = await MessageModel.findByIdAndUpdate(id, update, {
-      new: true,
+      returnDocument: "after",
     });
 
     if (!message) {
@@ -277,7 +277,7 @@ export const readMessage = async (req, res) => {
     const message = await MessageModel.findByIdAndUpdate(
       id,
       { $set: { isRead: true } },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!message) {
       return res
@@ -336,3 +336,4 @@ export const deleteMessage = async (req, res) => {
       .json({ error: "Internal server error", details: error.message });
   }
 };
+

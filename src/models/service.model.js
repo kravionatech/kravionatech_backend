@@ -157,7 +157,6 @@ const serviceSchema = new mongoose.Schema(
         "general",
       ],
       default: "general",
-      index: true,
     },
 
     // "Why Choose" section
@@ -183,11 +182,11 @@ const serviceSchema = new mongoose.Schema(
     // Badge text (e.g. "Most Popular", "Top Rated", "New")
     badge: { type: String, trim: true },
 
-    isPopular: { type: Boolean, default: false, index: true },
+    isPopular: { type: Boolean, default: false },
 
     // Active flag (spec calls isActive; we keep isPublished as the public
     // filter and use isActive as the soft-delete flag).
-    isActive: { type: Boolean, default: true, index: true },
+    isActive: { type: Boolean, default: true },
 
     // Full SEO sub-document
     seo: { type: seoSchema, default: () => ({}) },
@@ -210,7 +209,6 @@ serviceSchema.pre("save", function (next) {
 // ──────────────────────────────────────────
 // Indexes
 // ──────────────────────────────────────────
-serviceSchema.index({ slug: 1 });
 serviceSchema.index({ isPublished: 1, isActive: 1, order: 1 });
 serviceSchema.index({ isFeatured: 1, isPublished: 1 });
 

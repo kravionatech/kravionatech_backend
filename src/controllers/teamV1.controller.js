@@ -1,5 +1,5 @@
-/**
- * TeamMember controller — dynamization spec §3.3
+﻿/**
+ * TeamMember controller â€” dynamization spec Â§3.3
  *
  * Public (Redis 5min):
  *   GET /api/v1/public/team
@@ -68,7 +68,7 @@ export const updateTeamMember = async (req, res, next) => {
     const updated = await TeamMemberModel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Team member not found" });
@@ -83,13 +83,13 @@ export const updateTeamMember = async (req, res, next) => {
   }
 };
 
-// DELETE /api/v1/team/:id  — soft delete
+// DELETE /api/v1/team/:id  â€” soft delete
 export const deleteTeamMember = async (req, res, next) => {
   try {
     const updated = await TeamMemberModel.findByIdAndUpdate(
       req.params.id,
       { $set: { isActive: false, isPublished: false } },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Team member not found" });
@@ -121,3 +121,4 @@ export const reorderTeam = async (req, res, next) => {
     next(err);
   }
 };
+

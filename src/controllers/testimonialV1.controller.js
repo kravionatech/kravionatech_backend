@@ -1,5 +1,5 @@
-/**
- * Testimonial controller — dynamization spec §7.2
+﻿/**
+ * Testimonial controller â€” dynamization spec Â§7.2
  *
  * Public (Redis 5min):
  *   GET /api/v1/public/testimonials
@@ -73,7 +73,7 @@ export const updateTestimonial = async (req, res, next) => {
     const updated = await TestimonialModel.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Testimonial not found" });
@@ -104,7 +104,7 @@ export const approveTestimonial = async (req, res, next) => {
     const updated = await TestimonialModel.findByIdAndUpdate(
       req.params.id,
       { $set: update },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!updated) {
       return res.status(404).json({ success: false, data: null, message: "Testimonial not found" });
@@ -135,3 +135,4 @@ export const deleteTestimonial = async (req, res, next) => {
     next(err);
   }
 };
+
