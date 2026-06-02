@@ -48,33 +48,10 @@ app.set("trust proxy", 1);
 // `credentials: true` per the CORS spec). Reading from env keeps
 // prod (api.kraviona.com) and admin (adminkraviona.vercel.app)
 // working without code changes.
-const ALLOWED_ORIGINS = (
-  process.env.CORS_ORIGINS ||
-  "https://kraviona.com,https://www.kraviona.com,https://adminkraviona.vercel.app,https://api.kraviona.com"
-)
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
 
 const corsOptions = {
-  origin(origin, callback) {
-    // Allow same-origin / curl (no Origin header) and whitelisted origins
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error(`CORS: origin ${origin} not allowed`));
-  },
+  origin: true, // sab origins allow
   credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "Accept",
-    "Origin",
-  ],
-  exposedHeaders: ["Content-Range", "X-Content-Range"],
-  maxAge: 86400, // cache preflight for 24h
 };
 
 // Make sure preflight always succeeds (before any other middleware that
