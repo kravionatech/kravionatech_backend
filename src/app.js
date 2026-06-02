@@ -38,7 +38,10 @@ import { publicLimiter, authLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
-app.set("trust proxy", true);
+// Trust the first proxy hop (Render's load balancer). Using a number
+// (or a specific subnet) instead of `true` is required by
+// express-rate-limit v8+, which otherwise throws ERR_ERL_PERMISSIVE_TRUST_PROXY.
+app.set("trust proxy", 1);
 
 // ── CORS ─────────────────────────────────────────────────────
 // Explicit origin allowlist (browsers reject `origin: "*"` with
@@ -76,7 +79,9 @@ const corsOptions = {
 
 // Make sure preflight always succeeds (before any other middleware that
 // could throw, e.g. express-mongo-sanitize under Node ≥18).
-app.options("*", cors(corsOptions));
+// Express 5 / path-to-regexp v8 no longer accepts bare "*" as a path —
+// use a regex to match everything.
+app.options(/.*/, cors(corsOptions));
 app.use(cors(corsOptions));
 
 // ── Parsers + security primitives ────────────────────────────
