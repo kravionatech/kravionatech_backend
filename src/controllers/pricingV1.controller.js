@@ -28,6 +28,56 @@ export const getPublicPricing = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/pricing  (admin - includes inactive)
+export const getAdminPricing = async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.isActive === "true") filter.isActive = true;
+    if (req.query.isActive === "false") filter.isActive = false;
+    if (req.query.search) {
+      const rx = new RegExp(req.query.search, "i");
+      filter.$or = [{ name: rx }, { tagline: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      PricingPlanModel.find(filter).sort({ order: 1, name: 1 }).skip(skip).limit(limit).lean(),
+      PricingPlanModel.countDocuments(filter),
+    ]);
+    return res.status(200).json({
+      success: true,
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      message: "",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/v1/pricing/:id  (admin - returns inactive too)
+export const getAdminPricingById = async (req, res, next) => {
+  try {
+    const doc = await PricingPlanModel.findById(req.params.id);
+    if (!doc) {
+      return res.status(404).json({ success: false, data: null, message: "Pricing plan not found" });
+    }
+    return ok(res, doc);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({ success: false, data: null, message: "Invalid pricing plan ID" });
+    }
+    next(err);
+  }
+};
+
 // POST /api/v1/pricing
 export const createPricing = async (req, res, next) => {
   try {

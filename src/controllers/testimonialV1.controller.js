@@ -49,6 +49,64 @@ export const getPublicFeaturedTestimonials = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/testimonials  (admin - includes unapproved/unpublished)
+export const getAdminTestimonials = async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.isApproved === "true") filter.isApproved = true;
+    if (req.query.isApproved === "false") filter.isApproved = false;
+    if (req.query.isPublished === "true") filter.isPublished = true;
+    if (req.query.isFeatured === "true") filter.isFeatured = true;
+    if (req.query.showOn) filter.showOn = req.query.showOn;
+    if (req.query.search) {
+      const rx = new RegExp(req.query.search, "i");
+      filter.$or = [{ clientName: rx }, { review: rx }, { company: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      TestimonialModel.find(filter)
+        .populate("serviceUsed service projectRef", "title name slug")
+        .sort({ order: 1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      TestimonialModel.countDocuments(filter),
+    ]);
+    return res.status(200).json({
+      success: true,
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      message: "",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/v1/testimonials/:id  (admin - returns drafts too)
+export const getAdminTestimonialById = async (req, res, next) => {
+  try {
+    const doc = await TestimonialModel.findById(req.params.id)
+      .populate("serviceUsed service projectRef", "title name slug");
+    if (!doc) {
+      return res.status(404).json({ success: false, data: null, message: "Testimonial not found" });
+    }
+    return ok(res, doc);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({ success: false, data: null, message: "Invalid testimonial ID" });
+    }
+    next(err);
+  }
+};
+
 // POST /api/v1/testimonials
 export const createTestimonial = async (req, res, next) => {
   try {

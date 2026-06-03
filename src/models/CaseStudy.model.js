@@ -90,14 +90,13 @@ const caseStudySchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-caseStudySchema.pre("save", function (next) {
+caseStudySchema.pre("save", async function () {
   if (!this.slug) {
     this.slug = slugify(this.title, { lower: true, strict: true });
   }
   if (this.status === "published" && !this.publishedAt) {
     this.publishedAt = new Date();
   }
-  next();
 });
 
 caseStudySchema.index({ status: 1, publishedAt: -1 });

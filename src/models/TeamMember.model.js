@@ -66,7 +66,7 @@ const teamMemberSchema = new mongoose.Schema(
 );
 
 // Auto-generate slug from name
-teamMemberSchema.pre("save", function (next) {
+teamMemberSchema.pre("save", async function () {
   if (!this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
@@ -84,7 +84,6 @@ teamMemberSchema.pre("save", function (next) {
   if (this.socialLinks && Object.keys(this.socialLinks).length && !this.social) {
     this.social = { ...this.socialLinks };
   }
-  next();
 });
 
 teamMemberSchema.index({ isPublished: 1, isActive: 1 });

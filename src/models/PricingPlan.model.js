@@ -71,11 +71,10 @@ const pricingPlanSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-pricingPlanSchema.pre("save", function (next) {
+pricingPlanSchema.pre("save", async function () {
   if (!this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
-  next();
 });
 
 pricingPlanSchema.index({ isActive: 1, order: 1 });

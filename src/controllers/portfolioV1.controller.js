@@ -56,6 +56,64 @@ export const getPublicPortfolioFeatured = async (_req, res, next) => {
   }
 };
 
+// GET /api/v1/portfolio  (admin list - includes drafts, archived, un-published)
+// Returns every project so the admin panel can list / edit / archive.
+export const getAdminPortfolio = async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.projectType) filter.projectType = req.query.projectType;
+    if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.featured === "true") filter.isFeatured = true;
+    if (req.query.search) {
+      const rx = new RegExp(req.query.search, "i");
+      filter.$or = [{ title: rx }, { client: rx }, { description: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      ProjectModel.find(filter)
+        .populate("serviceCategory servicesUsed", "title name slug")
+        .sort({ isFeatured: -1, completedAt: -1, order: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ProjectModel.countDocuments(filter),
+    ]);
+    return res.status(200).json({
+      success: true,
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      message: "",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/v1/portfolio/:id  (admin - returns drafts too, by Mongo _id)
+export const getAdminPortfolioById = async (req, res, next) => {
+  try {
+    const doc = await ProjectModel.findById(req.params.id)
+      .populate("serviceCategory servicesUsed", "title name slug");
+    if (!doc) {
+      return res.status(404).json({ success: false, data: null, message: "Project not found" });
+    }
+    return ok(res, doc);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({ success: false, data: null, message: "Invalid project ID" });
+    }
+    next(err);
+  }
+};
+
 // GET /api/v1/public/portfolio/:slug
 export const getPublicPortfolioBySlug = async (req, res, next) => {
   try {

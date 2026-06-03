@@ -10,6 +10,8 @@ import {
   createCaseStudy,
   updateCaseStudy,
   deleteCaseStudy,
+  getAdminCaseStudies,
+  getAdminCaseStudyById,
 } from "../controllers/caseStudyV1.controller.js";
 
 export const caseStudyV1Router = express.Router();
@@ -19,6 +21,18 @@ caseStudyV1Router.get("/v1/public/case-studies", getPublicCaseStudies);
 caseStudyV1Router.get("/v1/public/case-studies/:slug", getPublicCaseStudyBySlug);
 
 // Protected
+caseStudyV1Router.get(
+  "/v1/case-studies",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminCaseStudies,
+);
+caseStudyV1Router.get(
+  "/v1/case-studies/:id",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminCaseStudyById,
+);
 caseStudyV1Router.post(
   "/v1/case-studies",
   authMiddleWare,

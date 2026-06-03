@@ -36,14 +36,35 @@ export const getPublicSiteConfig = async (_req, res, next) => {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateSiteConfig = async (req, res, next) => {
   try {
-    const update = { ...req.body, _id: SITE_CONFIG_ID };
+    // Never let the client overwrite _id or stamp their own
+    // updatedBy - that field is reserved for the authenticated admin.
+    const { _id: _ignoredId, updatedBy: _ignoredBy, ...rest } = req.body || {};
+
+    const update = {
+      ...rest,
+      _id: SITE_CONFIG_ID,
+      updatedBy: req.user?.id || req.user?._id || null,
+    };
+
     const doc = await SiteConfigModel.findByIdAndUpdate(
       SITE_CONFIG_ID,
       { $set: update },
-      { returnDocument: "after", upsert: true, runValidators: true, setDefaultsOnInsert: true },
+      {
+        returnDocument: "after",
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
     );
-    // Bust the public cache
-    await invalidateCache("site-config");
+
+    // Bust the public cache (best-effort - never fail the request).
+    // CACHE_KEYS.siteConfig is the canonical key in utils/cache.js.
+    try {
+      await invalidateCache("siteConfig");
+    } catch (cacheErr) {
+      console.error("[SITECONFIG] cache invalidation failed:", cacheErr.message);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Site config updated successfully",

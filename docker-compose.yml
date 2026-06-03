@@ -1,0 +1,55 @@
+name: kraviona-local
+
+# One-command local stack for kravionatech_backend.
+# Brings up MongoDB and Redis (with in-memory fallback, Redis is optional
+# at runtime - see src/utils/cache.js). The backend itself is run with
+# `npm run dev` on the host, so the Node debugger / nodemon keep working
+# the way most contributors expect.
+#
+#   docker compose up -d           # Mongo + Redis
+#   npm install
+#   cp .env.example .env && edit   # set MONGODB_URI etc.
+#   npm run seed                   # idempotent
+#   npm run dev                    # backend on :3123
+#
+# All data is persisted in named volumes; teardown with
+# `docker compose down -v` (the `-v` drops the data).
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: kraviona-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      # Dev-only creds. Tighten or remove for staging/prod.
+      MONGO_INITDB_ROOT_USERNAME: kraviona
+      MONGO_INITDB_ROOT_PASSWORD: kraviona_dev_pw
+      MONGO_INITDB_DATABASE: kraviona
+    volumes:
+      - kraviona_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: kraviona-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - kraviona_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  kraviona_mongo_data:
+  kraviona_redis_data:

@@ -10,6 +10,8 @@ import {
   createPricing,
   updatePricing,
   deletePricing,
+  getAdminPricing,
+  getAdminPricingById,
 } from "../controllers/pricingV1.controller.js";
 
 export const pricingV1Router = express.Router();
@@ -22,6 +24,18 @@ pricingV1Router.get(
 );
 
 // Protected
+pricingV1Router.get(
+  "/v1/pricing",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminPricing,
+);
+pricingV1Router.get(
+  "/v1/pricing/:id",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminPricingById,
+);
 pricingV1Router.post(
   "/v1/pricing",
   authMiddleWare,

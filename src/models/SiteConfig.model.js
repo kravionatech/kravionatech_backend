@@ -213,8 +213,63 @@ const siteConfigSchema = new mongoose.Schema(
     defaultMetaTitle: { type: String, trim: true, default: "Kraviona Tech Solutions" },
     defaultMetaDescription: { type: String, trim: true },
     defaultOgImage: { type: String, trim: true, default: "/og-image.jpg" },
+
+    // ── Editor-driven extensions (added for CRM P0) ──────
+    // The admin panel writes per-page editor state (Home sections,
+    // Global Settings sub-sections, About/Contact/Services/Pricing
+    // page-level content) into these keys. They are intentionally
+    // declared as `Mixed` so unknown fields don't get silently
+    // dropped by Mongoose strict mode — see SiteConfig.model.js
+    // header for the full rationale. Existing controllers
+    // (getPublicSiteConfig / updateSiteConfig) return the document
+    // untouched, so the frontend reads the same shape it writes.
+    schemaVersion: { type: Number, default: 2 },
+    updatedBy: { type: String, trim: true, default: null },
+
+    homeServicesShowcase: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeBlogSection: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeCta: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeTestimonials: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeNewsletter: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeStats: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeWhoWeAre: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeWhyUs: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeTechStack: { type: mongoose.Schema.Types.Mixed, default: null },
+    homeFaqSection: { type: mongoose.Schema.Types.Mixed, default: null },
+
+    contactInfo: { type: mongoose.Schema.Types.Mixed, default: null },
+    address: { type: mongoose.Schema.Types.Mixed, default: null },
+    socialExtended: { type: mongoose.Schema.Types.Mixed, default: null },
+    nav: { type: mongoose.Schema.Types.Mixed, default: null },
+    footerExtended: { type: mongoose.Schema.Types.Mixed, default: null },
+    newsletterExtended: { type: mongoose.Schema.Types.Mixed, default: null },
+    analytics: { type: mongoose.Schema.Types.Mixed, default: null },
+    maintenance: { type: mongoose.Schema.Types.Mixed, default: null },
+
+    servicesPage: { type: mongoose.Schema.Types.Mixed, default: null },
+    pricingPage: { type: mongoose.Schema.Types.Mixed, default: null },
+    caseStudiesPage: { type: mongoose.Schema.Types.Mixed, default: null },
+    galleryPage: { type: mongoose.Schema.Types.Mixed, default: null },
+    blogPage: { type: mongoose.Schema.Types.Mixed, default: null },
+    aboutExtended: { type: mongoose.Schema.Types.Mixed, default: null },
+    contactPage: { type: mongoose.Schema.Types.Mixed, default: null },
+
+    // SEO sub-settings that the SEO drill-down pages manage
+    // independently of the global defaultMeta* fields above.
+    seoRobotsTxt: { type: String, default: null },
+    seoJsonLd: { type: mongoose.Schema.Types.Mixed, default: null },
+    seoSitemapConfig: { type: mongoose.Schema.Types.Mixed, default: null },
+    seoCanonicalRules: { type: mongoose.Schema.Types.Mixed, default: null },
+    seoNoindexRules: { type: mongoose.Schema.Types.Mixed, default: null },
   },
-  { timestamps: true, _id: false },
+  // strict: false  → unknown top-level keys from the admin editor
+  //                  are persisted instead of silently dropped
+  //                  (missing.txt §4 — every editor PUT was losing
+  //                  homeCta, contactInfo, nav, analytics, etc.)
+  // strictPopulate: false → we lean() a lot for read perf; we don't
+  //                  use .populate() against this doc, so leaving
+  //                  this off is safe.
+  { timestamps: true, _id: false, strict: false },
 );
 
 export const SiteConfigModel =

@@ -43,7 +43,7 @@ export const app = express();
 // express-rate-limit v8+, which otherwise throws ERR_ERL_PERMISSIVE_TRUST_PROXY.
 app.set("trust proxy", 1);
 app.use(cors({
-  origin: (origin, callback) => callback(null, true),
+  origin: "*",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 }));

@@ -24,6 +24,8 @@ import {
   updateService,
   deleteService,
   reorderServices,
+  getAdminServices,
+  getAdminServiceById,
 } from "../controllers/serviceV1.controller.js";
 
 export const serviceV1Router = express.Router();
@@ -47,27 +49,39 @@ serviceV1Router.get(
 );
 
 // ── Protected ───────────────────────────────────────────────
+// IMPORTANT: `reorder` and the static collection GET must be
+// registered BEFORE the `:id` routes or Express will match
+// "/v1/services/reorder" against `:id` (CastError).
+serviceV1Router.get(
+  "/v1/services",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminServices,
+);
 serviceV1Router.post(
   "/v1/services",
   authMiddleWare,
   roleCheck("super_admin"),
   createService,
 );
-
 serviceV1Router.put(
   "/v1/services/reorder",
   authMiddleWare,
   roleCheck("super_admin"),
   reorderServices,
 );
-
+serviceV1Router.get(
+  "/v1/services/:id",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminServiceById,
+);
 serviceV1Router.put(
   "/v1/services/:id",
   authMiddleWare,
   roleCheck("super_admin"),
   updateService,
 );
-
 serviceV1Router.delete(
   "/v1/services/:id",
   authMiddleWare,

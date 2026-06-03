@@ -12,6 +12,7 @@ import {
   updateUserRole,
   deleteUser,
   toggleUserBlock,
+  getMe,
 } from "../controllers/user.controller.js";
 
 import { authMiddleWare } from "../middleware/authMiddleWare.js";
@@ -31,6 +32,9 @@ userRouter.post("/auth/login-password", logInWithPassword);
 userRouter.put("/auth/edit-account", authMiddleWare, editAccount);
 userRouter.post("/auth/refresh-token", refreshToken);
 userRouter.post("/auth/logout", authMiddleWare, logout);
+
+// GET /api/auth/me — returns the authenticated user (any role).
+userRouter.get("/auth/me", authMiddleWare, getMe);
 
 // Admin User Management
 userRouter.get("/admin/users", authMiddleWare, roleCheck("super_admin"), getAllUsers);

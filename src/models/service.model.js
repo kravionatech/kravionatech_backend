@@ -197,13 +197,12 @@ const serviceSchema = new mongoose.Schema(
 // ──────────────────────────────────────────
 // Pre-save: auto-generate slug from name
 // ──────────────────────────────────────────
-serviceSchema.pre("save", function (next) {
+serviceSchema.pre("save", async function () {
   if (!this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
   // Mirror title from name for spec compliance
   if (!this.title) this.title = this.name;
-  next();
 });
 
 // ──────────────────────────────────────────

@@ -32,6 +32,61 @@ export const getPublicCaseStudies = async (req, res, next) => {
   }
 };
 
+// GET /api/v1/case-studies  (admin - includes drafts, archived)
+export const getAdminCaseStudies = async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.featured === "true") filter.featured = true;
+    if (req.query.search) {
+      const rx = new RegExp(req.query.search, "i");
+      filter.$or = [{ title: rx }, { client: rx }, { industry: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      CaseStudyModel.find(filter)
+        .populate("servicesUsed", "title name slug")
+        .sort({ publishedAt: -1, order: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      CaseStudyModel.countDocuments(filter),
+    ]);
+    return res.status(200).json({
+      success: true,
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      message: "",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET /api/v1/case-studies/:id  (admin - returns drafts too)
+export const getAdminCaseStudyById = async (req, res, next) => {
+  try {
+    const doc = await CaseStudyModel.findById(req.params.id)
+      .populate("servicesUsed", "title name slug");
+    if (!doc) {
+      return res.status(404).json({ success: false, data: null, message: "Case study not found" });
+    }
+    return ok(res, doc);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({ success: false, data: null, message: "Invalid case study ID" });
+    }
+    next(err);
+  }
+};
+
 // GET /api/v1/public/case-studies/:slug
 export const getPublicCaseStudyBySlug = async (req, res, next) => {
   try {

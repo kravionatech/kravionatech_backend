@@ -12,6 +12,8 @@ import {
   updateTestimonial,
   approveTestimonial,
   deleteTestimonial,
+  getAdminTestimonials,
+  getAdminTestimonialById,
 } from "../controllers/testimonialV1.controller.js";
 
 export const testimonialV1Router = express.Router();
@@ -29,6 +31,18 @@ testimonialV1Router.get(
 );
 
 // Protected
+testimonialV1Router.get(
+  "/v1/testimonials",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminTestimonials,
+);
+testimonialV1Router.get(
+  "/v1/testimonials/:id",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminTestimonialById,
+);
 testimonialV1Router.post(
   "/v1/testimonials",
   authMiddleWare,

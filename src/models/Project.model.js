@@ -140,7 +140,7 @@ const projectSchema = new mongoose.Schema(
 );
 
 // Auto-generate slug
-projectSchema.pre("save", function (next) {
+projectSchema.pre("save", async function () {
   if (!this.slug) {
     this.slug = slugify(this.title, { lower: true, strict: true });
   }
@@ -149,7 +149,6 @@ projectSchema.pre("save", function (next) {
   if (this.techStack && this.techStack.length && (!this.technologies || !this.technologies.length)) {
     this.technologies = this.techStack;
   }
-  next();
 });
 
 projectSchema.index({ isPublished: 1, isActive: 1, status: 1 });

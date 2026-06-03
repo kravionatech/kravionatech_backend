@@ -62,6 +62,60 @@ export const getPublicServicesNav = async (_req, res, next) => {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // GET /api/v1/public/services/:slug
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export const getAdminServices = async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.isActive === "true") filter.isActive = true;
+    if (req.query.isActive === "false") filter.isActive = false;
+    if (req.query.isPublished === "true") filter.isPublished = true;
+    if (req.query.isFeatured === "true") filter.isFeatured = true;
+    if (req.query.search) {
+      const rx = new RegExp(req.query.search, "i");
+      filter.$or = [{ name: rx }, { title: rx }, { slug: rx }, { shortDesc: rx }];
+    }
+
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      ServiceModel.find(filter)
+        .sort({ order: 1, name: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      ServiceModel.countDocuments(filter),
+    ]);
+    return res.status(200).json({
+      success: true,
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      message: "",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAdminServiceById = async (req, res, next) => {
+  try {
+    const doc = await ServiceModel.findById(req.params.id);
+    if (!doc) {
+      return res.status(404).json({ success: false, data: null, message: "Service not found" });
+    }
+    return ok(res, doc);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({ success: false, data: null, message: "Invalid service ID" });
+    }
+    next(err);
+  }
+};
+
 export const getPublicServiceBySlug = async (req, res, next) => {
   try {
     const service = await ServiceModel.findOne({

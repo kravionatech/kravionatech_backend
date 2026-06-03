@@ -12,6 +12,8 @@ import {
   createPortfolio,
   updatePortfolio,
   deletePortfolio,
+  getAdminPortfolio,
+  getAdminPortfolioById,
 } from "../controllers/portfolioV1.controller.js";
 
 export const portfolioV1Router = express.Router();
@@ -30,6 +32,18 @@ portfolioV1Router.get(
 portfolioV1Router.get("/v1/public/portfolio/:slug", getPublicPortfolioBySlug);
 
 // Protected
+portfolioV1Router.get(
+  "/v1/portfolio",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminPortfolio,
+);
+portfolioV1Router.get(
+  "/v1/portfolio/:id",
+  authMiddleWare,
+  roleCheck("super_admin"),
+  getAdminPortfolioById,
+);
 portfolioV1Router.post(
   "/v1/portfolio",
   authMiddleWare,
