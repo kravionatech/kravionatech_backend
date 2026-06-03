@@ -44,13 +44,11 @@ export const app = express();
 app.set("trust proxy", 1);
 
 // ── CORS ─────────────────────────────────────────────────────
-// Explicit origin allowlist (browsers reject `origin: "*"` with
-// `credentials: true` per the CORS spec). Reading from env keeps
-// prod (api.kraviona.com) and admin (adminkraviona.vercel.app)
-// working without code changes.
-
+// Dynamically allowing all origins to keep credentials working
 const corsOptions = {
-  origin: true, // sab origins allow
+  origin: function (origin, callback) {
+    callback(null, true); 
+  },
   credentials: true,
 };
 
