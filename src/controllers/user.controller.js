@@ -1,4 +1,4 @@
-﻿import { SubscriberModel } from "../models/subscriber.model.js";
+import { SubscriberModel } from "../models/subscriber.model.js";
 import { UserModel } from "../models/user.model.js";
 import { authTokenGenerate } from "../utils/authTokenGenerate.js";
 import {
@@ -286,7 +286,7 @@ export const resendOTP = async (req, res) => {
         ---------------------------------
     */
     if (!user)
-      return res.status(404).json({ message: "User not found", success: true });
+      return res.status(404).json({ message: "User not found", success: false });
 
     /*
         ---------------------------------

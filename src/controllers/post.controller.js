@@ -1,4 +1,4 @@
-﻿import slugify from "slugify";
+import slugify from "slugify";
 import { CategoryModel } from "../models/category.model.js";
 import { PostModel } from "../models/post.model.js";
 import { UserModel } from "../models/user.model.js";
@@ -179,9 +179,15 @@ export const publishedPost = async (req, res) => {
       .limit(limit);
 
     if (posts.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "No published posts found",
-        success: false,
+        success: true,
+        data: [],
+        pagination: {
+          total: 0,
+          page,
+          limit,
+        },
       });
     }
     return res.status(200).json({

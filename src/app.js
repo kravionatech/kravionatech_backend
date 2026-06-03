@@ -1,8 +1,7 @@
 import express from "express";
-import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-
+import cors from "cors"
 // ── Existing Routers ─────────────────────────────────────────
 import { userRouter } from "./routes/user.routes.js";
 import { messageRouter } from "./routes/messages.routes.js";
@@ -38,26 +37,16 @@ import { publicLimiter, authLimiter } from "./middleware/rateLimiter.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 export const app = express();
+
 // Trust the first proxy hop (Render's load balancer). Using a number
 // (or a specific subnet) instead of `true` is required by
 // express-rate-limit v8+, which otherwise throws ERR_ERL_PERMISSIVE_TRUST_PROXY.
 app.set("trust proxy", 1);
-
-// ── CORS ─────────────────────────────────────────────────────
-// Dynamically allowing all origins to keep credentials working
-const corsOptions = {
-  origin: function (origin, callback) {
-    callback(null, true); 
-  },
+app.use(cors({
+  origin: (origin, callback) => callback(null, true),
   credentials: true,
-};
-
-// Make sure preflight always succeeds (before any other middleware that
-// could throw, e.g. express-mongo-sanitize under Node ≥18).
-// Express 5 / path-to-regexp v8 no longer accepts bare "*" as a path —
-// use a regex to match everything.
-app.options(/.*/, cors(corsOptions));
-app.use(cors(corsOptions));
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+}));
 
 // ── Parsers + security primitives ────────────────────────────
 app.use(express.json({ limit: "2mb" }));

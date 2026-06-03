@@ -861,15 +861,15 @@ const main = async () => {
   } catch (err) {
     console.error("❌  Seed failed:", err);
     process.exitCode = 1;
-  } finally {
-    await mongoose.connection.close();
-    process.exit(process.exitCode || 0);
   }
 };
 
 // Run if invoked directly
 if (process.argv[1] && process.argv[1].endsWith("seedSiteData.js")) {
-  main();
+  main().finally(async () => {
+    await mongoose.connection.close();
+    process.exit(process.exitCode || 0);
+  });
 }
 
 export { main as runSeed };

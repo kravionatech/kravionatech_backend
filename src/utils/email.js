@@ -11,9 +11,14 @@ export const sendEmail = async ({ to, subject, html }) => {
       subject,
       html,
     });
+    if (data?.error) {
+      throw new Error(data.error.message || JSON.stringify(data.error));
+    }
     console.log("Email Sent Successfully: ", data);
+    return data;
   } catch (error) {
-    console.table("Email Send Failed: ", error.message);
+    console.error("Email Send Failed: ", error.message);
+    throw error;
   }
 };
 

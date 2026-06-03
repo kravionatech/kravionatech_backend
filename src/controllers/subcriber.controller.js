@@ -81,9 +81,15 @@ export const getAllSubscriber = async (req, res) => {
       .limit(limit);
 
     if (subscribers.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "No subscribers found",
-        success: false,
+        success: true,
+        subscribers: [],
+        pagination: {
+          total: 0,
+          page,
+          limit,
+        },
       });
     }
     return res.status(200).json({

@@ -35,6 +35,10 @@ const DEFAULT_SETTINGS = [
   { key: "seo_title",       value: "Kraviona Tech — IT Services", type: "text",  group: "seo", label: "Default SEO Title",       description: "Fallback title tag for all pages" },
   { key: "seo_description", value: "",                            type: "text",  group: "seo", label: "Default Meta Description",description: "Fallback meta description" },
   { key: "seo_og_image",    value: "",                            type: "image", group: "seo", label: "Default OG Image",        description: "Default Open Graph image (1200x630)" },
+  { key: "seo_canonical_rules", value: [],                        type: "json",  group: "seo", label: "Canonical Rules",         description: "JSON array of canonical and redirect rules" },
+  { key: "seo_noindex_pages",   value: [],                        type: "json",  group: "seo", label: "No-Index Pages",           description: "JSON array of pages excluded from indexing" },
+  { key: "seo_schema_jsonld",   value: [],                        type: "json",  group: "seo", label: "Schema JSON-LD",           description: "JSON array of active schemas" },
+  { key: "seo_sitemap_routes",  value: [],                        type: "json",  group: "seo", label: "Sitemap Routes",           description: "JSON array of sitemap routes" },
 
   // Footer
   { key: "footer_copyright", value: `© ${new Date().getFullYear()} Kraviona Tech. All rights reserved.`, type: "text", group: "footer", label: "Copyright Text", description: "" },

@@ -14,7 +14,7 @@ const jsonError = (message) => (_req, res) =>
 
 export const publicLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: process.env.NODE_ENV === "production" ? 100 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
   handler: jsonError("Too many requests — please try again later"),
@@ -22,7 +22,7 @@ export const publicLimiter = rateLimit({
 
 export const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 20,
+  max: process.env.NODE_ENV === "production" ? 20 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
   handler: jsonError("Too many auth attempts — please wait a minute"),
@@ -30,7 +30,7 @@ export const authLimiter = rateLimit({
 
 export const trackLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 60,
+  max: process.env.NODE_ENV === "production" ? 60 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
   handler: jsonError("Tracking rate limit exceeded"),

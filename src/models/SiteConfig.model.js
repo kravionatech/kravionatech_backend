@@ -44,6 +44,12 @@ const techToolSchema = new mongoose.Schema(
   {
     name: { type: String, trim: true },
     logoUrl: { type: String, trim: true },
+    description: { type: String, trim: true },
+    website: { type: String, trim: true },
+    proficiency: { type: Number, default: 80 },
+    yearsUsed: { type: Number, default: 1 },
+    isPrimary: { type: Boolean, default: false },
+    tags: { type: [String], default: [] },
   },
   { _id: false },
 );
